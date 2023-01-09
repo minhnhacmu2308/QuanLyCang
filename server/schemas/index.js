@@ -1,9 +1,11 @@
 export const typeDefs = `#graphql
+    scalar Date
     type Category{
         _id:String,
         code:String,
         name:String,
-        createdAt: String       
+        createdAt: Date
+        updatedAt: Date       
     },
     type Query {
         categorys:[Category]
