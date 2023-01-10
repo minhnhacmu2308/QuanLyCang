@@ -1,37 +1,23 @@
-import {CategoryModel} from '../models/index.js';
-import  {GraphQLScalarType} from 'graphql';
+import categoryResolver from "./category.js";
+import unitResolver from "./unit.js";
+import customerResolver from "./customer.js";
+import driverResolver from "./driver.js";
+import manufacturerResolver from "./manufacturer.js";
+import userResolver from "./user.js";
+import warehouseResolver from "./warehouse.js";
+import transequipmentResolver from "./transequipment.js";
+import { GraphQLScalarType } from "graphql";
 
-export const resolvers = {
-    Date: new GraphQLScalarType({
-        name:'Date',
-        parsevvalue(value){
-            return new Date(value);
-        },
-        serialize(value){
-            return value.toISOString();
-        }
-    }),   
-    Query:{
-        categorys : async () =>{
-            const categorys = await CategoryModel.find();
-            return categorys;
-        }
+const customResolver = {
+  Date: new GraphQLScalarType({
+    name: "Date",
+    parsevvalue(value) {
+      return new Date(value);
     },
-    Mutation:{
-        addCategory:async (parent, args) =>{
-            const newCategory = new CategoryModel(args);
-            await newCategory.save();
-            return newCategory;
-        },
-        deleteCategory : async (parent, args) =>{
-            let categoryId = args._id;
-            const result = await CategoryModel.deleteOne({_id:categoryId});
-            return result.deletedCount.toString();
-        },
-        updateCategory : async (parent, args) =>{
-            const categoryId = args._id;
-            const result = await CategoryModel.findByIdAndUpdate(categoryId,{name:args.name,code : args.code});
-            return result;
-        }
-    }
+    serialize(value) {
+      return value.toISOString();
+    },
+  }),
 };
+
+export default [customResolver, categoryResolver, unitResolver,customerResolver,driverResolver,manufacturerResolver,userResolver,warehouseResolver,transequipmentResolver];
