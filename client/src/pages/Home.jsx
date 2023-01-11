@@ -1,7 +1,11 @@
-import { useState,useEffect } from 'react'
+import { useState,useEffect ,useMemo} from 'react';
+import MaterialReactTable from 'material-react-table';
 import Header from '../components/Header';
 import Footer from '../components/Footer/index';
 import MenuLeft from '../components/MenuLeft';
+
+
+
 
 function Home() {
 
@@ -56,8 +60,12 @@ function Home() {
                           </div>
                       </div>
                   </div>
-                 
+                  
               </div>
+              <div className='container'>
+                   
+              </div>
+              
           </main>
           <Footer/>
       </div>

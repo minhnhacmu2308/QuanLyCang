@@ -8,6 +8,7 @@ import warehouseResolver from "./warehouse.js";
 import transequipmentResolver from "./transequipment.js";
 import { GraphQLScalarType } from "graphql";
 
+
 const customResolver = {
   Date: new GraphQLScalarType({
     name: "Date",

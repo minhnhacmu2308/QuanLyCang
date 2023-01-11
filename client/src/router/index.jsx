@@ -1,6 +1,8 @@
 import { createBrowserRouter ,Outlet} from "react-router-dom";
 import Login from "../pages/Login"
 import Home from "../pages/Home.jsx"
+import Category from "../pages/Category";
+import { categoryLoader } from "../utils/categoryUtils";
 
 
 const AuthLayout = () => {
@@ -17,8 +19,13 @@ export default createBrowserRouter([
             },
             {
                 element:<Home />,
-                path:'/'
-            }
+                path:'/',              
+            },
+            {
+                element:<Category/>,
+                path:'/category',
+                loader: categoryLoader
+            },
         ]
     }
 ])
