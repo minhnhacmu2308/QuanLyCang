@@ -1,8 +1,9 @@
 import { gql } from "apollo-server-express";
 
-export default gql`
+export default gql `
   type Category {
     _id: String
+    code: String
     name: String
     createdAt: Date
     updatedAt: Date
@@ -11,8 +12,8 @@ export default gql`
     categorys: [Category]
   }
   extend type Mutation {
-    addCategory(name: String!): Category
+    addCategory(code:String!,name: String!): Category
     deleteCategory(_id: String!): Boolean!
-    updateCategory(_id: String!, name: String!): Category
+    updateCategory(_id: String!,code:String!, name: String!): Category
   }
 `;

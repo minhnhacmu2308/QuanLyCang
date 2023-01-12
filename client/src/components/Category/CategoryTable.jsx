@@ -1,6 +1,4 @@
-import { useState,useEffect ,useMemo,useCallback} from 'react';
-import MaterialReactTable from 'material-react-table';
-import moment from 'moment';
+import { Delete, Edit } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -9,33 +7,46 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
   Stack,
   TextField,
-  Tooltip,
+  Tooltip
 } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import MaterialReactTable from 'material-react-table';
+import moment from 'moment';
+import { useCallback, useMemo, useState } from 'react';
+import { addCategory, deleteCategory, updateCategory } from '../../utils/categoryUtils.js';
+import { generateId } from '../../utils/utils.js';
+import Toast from '../Toast/index.jsx';
 
 function CategoryTable({...props}) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState(() => props.props.data.categorys);
+  const [alertState, setAlertState] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
-  const handleCreateNewRow = (values) => {
+  const handleCreateNewRow = async (values) => {
+    const code = generateId(20);
+    values.code = code;
+    const data =  await addCategory(values);
     var today = new Date();
-    console.log("tableData", tableData);
-    console.log("length",tableData.length)
-    values._id = parseInt(tableData.length) +1;
-    values.createdAt =  today;
-    tableData.push(values);
+    const value = data.data.addCategory;
+    value.createdAt = today;
+    tableData.push(value);
     setTableData([...tableData]);
+    setAlertState(true);
   };
 
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
+    console.log("values",values);
+    console.log("row",row);
+    const variable = row.original;
+    variable.name = values.name
     if (!Object.keys(validationErrors).length) {
       tableData[row.index] = values;
       //send/receive api updates here, then refetch or update local table data for re-render
       setTableData([...tableData]);
+      const data = await updateCategory(variable);
+      console.log("data",data);
       exitEditingMode(); //required to exit editing mode and close modal
     }
   };
@@ -45,7 +56,7 @@ function CategoryTable({...props}) {
   };
 
   const handleDeleteRow = useCallback(
-    (row) => {
+   async (row) => {
       if (
         !confirm(`Are you sure you want to delete name  ${row.getValue("name")}`)
       ) {
@@ -54,35 +65,49 @@ function CategoryTable({...props}) {
       //send api delete request here, then refetch or update local table data for re-render
       tableData.splice(row.index, 1);
       setTableData([...tableData]);
+      const id =  row.original._id;
+      const data = await deleteCategory({id:id});
+      console.log(data);
     },
     [tableData],
   );
 
-  const getCommonEditTextFieldProps = useCallback(
+ const getCommonEditTextFieldProps = useCallback(
     (cell) => {
       return {
         error: !!validationErrors[cell.id],
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
-          setValidationErrors({
-            ...validationErrors,
-            [cell.id]: `${cell.column.columnDef.header} is required`,
-          });
+          const isValid = cell.column.id === 'name' ? validateRequired(event.target.value) : null;
+          if (!isValid) {
+            //set validation error for cell if invalid
+            setValidationErrors({
+              ...validationErrors,
+              [cell.id]: `${cell.column.columnDef.header} is required`,
+            });
+          } else {
+            //remove validation error for cell if valid
+            delete validationErrors[cell.id];
+            setValidationErrors({
+              ...validationErrors,
+            });
+          }
         },
       };
     },
     [validationErrors],
-   );
+  );
     const columns = useMemo(
         () => [
           {
-            accessorKey: '_id', //access nested data with dot notation
+            accessorKey: 'code', //access nested data with dot notation
             header: 'Code',
             muiTableHeadCellProps: { sx: { color: '#0D6EFD' } }, //optional custom props
             size: 80,                     
             muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
               ...getCommonEditTextFieldProps(cell),
               type: 'text',
+              disabled : true
             }),
           },
           {
@@ -99,7 +124,9 @@ function CategoryTable({...props}) {
             header: 'Created At',
             Cell: ({ cell, table }) => <span>{moment(cell.getValue()).format('YYYY-MM-DD|HH:mm:ss')}</span>,
             muiTableHeadCellProps: { sx: { color: '#0D6EFD' } }, //optional custom props
-            
+            muiTableBodyCellEditTextFieldProps: ({ row }) => ({
+              disabled: true,
+            }),
           },        
         ],
         [getCommonEditTextFieldProps],
@@ -148,6 +175,7 @@ function CategoryTable({...props}) {
           </Button>
         )}
       />
+     <Toast title="Add category success" color="#009933" open={alertState}/>
      <CreateNewAccountModal
         columns={columns}
         open={createModalOpen}
