@@ -2,10 +2,20 @@ import { UserModel } from "../models/index.js";
 import { ROLE_USER } from "../constants/index.js";
 import jwt from "jsonwebtoken";
 import { AuthenticationError, UserInputError } from "apollo-server";
+import path from "path";
+import fs from "fs";
+import CryptoJS from "crypto-js";
+
+function encrypt(text) {
+  return CryptoJS.HmacSHA256(text, process.env.ENCRYPT_SECRET_KEY).toString(
+    CryptoJS.enc.Hex
+  );
+}
+
 
 const createToken = async (user, secret, expiresIn) => {
-  const { id, email, username, fullname, role } = user;
-  return await jwt.sign({ id, email, fullname, username, role }, secret, {
+  const { id, email, userName, fullName, role } = user;
+  return await jwt.sign({ id, email, fullName, userName, role }, secret, {
     expiresIn,
   });
 };
@@ -14,14 +24,23 @@ export default {
   Query: {
     users: async () => {
       const users = await UserModel.find({ role: ROLE_USER });
+      console.log("user",users);
       return users;
     },
+    user: async (parent, { id}) => {
+      console.log("id",id)
+      const user = await UserModel.findOne({ _id: id });
+      console.log("id",user)
+      return user;
+    },
+    fileUpload : () =>"heloo anh em "
   },
   Mutation: {
-    signUp: async (parent, { userName, password }) => {
+    signUp: async (parent, { userName, password ,role}) => {
       const user = await UserModel.create({
         userName,
         password,
+        role
       });
 
       return {
@@ -30,7 +49,7 @@ export default {
     },
 
     signIn: async (parent, { login, password }) => {
-      console.log(login);
+      console.log(login,password);
       const user = await UserModel.findByLogin(login);
 
       if (!user) {
@@ -58,8 +77,9 @@ export default {
       }
     },
     changePassword: async (parent, { id, password }) => {
+      const password_hash = await encrypt(password);
       const result = await UserModel.findByIdAndUpdate(id, {
-        password: password,
+        password: password_hash,
       });
       if (result != null) {
         return true;
@@ -67,5 +87,70 @@ export default {
         return false;
       }
     },
+    
+    addUser: async (parent, args) => {
+      const password_hash =  await encrypt(args.password);
+      console.log("pa",password_hash)
+      const user = await UserModel.create({
+        userName:args.userName,
+        password:args.password,
+        role:args.role,
+        code:args.code,
+        birthday:args.birthday,
+        address:args.address,
+        fullName:args.fullName,
+        createdAt:args.createdAt,
+        image:args.image
+      });
+      return user;
+    },
+    updateUser: async (parent, args) => {
+      const driverId = args._id;
+      const result = await UserModel.findByIdAndUpdate(driverId, {
+        fullName: args.fullName,
+        code: args.code,
+        birthday: args.birthday,
+        userName: args.userName,
+        password:args.password,
+        address:args.address,
+        image:args.image
+      });
+      return result;
+    },
+    updateProfile: async (parent, args) => {
+      const driverId = args._id;
+      const result = await UserModel.findByIdAndUpdate(driverId, {
+        fullName: args.fullName,
+        code: args.code,
+        birthday: args.birthday,
+        address:args.address,
+        image:args.image
+      });
+      return result;
+    },
+    // uploadFile: async (_, { file }) => {
+    //   const { createReadStream, filename } = await file;
+
+    //   await new Promise(res =>
+    //     createReadStream()
+    //       .pipe(createWriteStream(path.join(__dirname, "../images", filename)))
+    //       .on("close", res)
+    //   );
+
+    //   files.push(filename);
+
+    //   return true;
+    // },
+    uploadFile: async (_,{file}) =>{
+      console.log("fileBE",file)
+      const {filename,mimetype,encoding,createReadStream} = await file;
+      
+      const stream = createReadStream();
+      const pathName = path.join(__dirname,`/public/images/${filename}`);
+      await stream.pipe(fs.createWriteStream(pathName));
+      return{
+        url:`http://localhost:5000/images/${filename}`
+      }
+    }
   },
 };

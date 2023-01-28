@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const vehicleSchema = new mongoose.Schema(
   {
+    code:{
+      type:String,
+      require:true
+    },
     type: {
       type: String,
       require: true,

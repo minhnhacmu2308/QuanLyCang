@@ -1,10 +1,18 @@
-import { WarehouseModel } from "../models/index.js";
+import { WarehouseModel,UserModel } from "../models/index.js";
+import { ROLE_USER } from "../constants/index.js";
 export default {
   Query: {
     warehouses: async () => {
       const warehouses = await WarehouseModel.find();
       return warehouses;
     },
+  },
+  Warehouse:{
+    user: async(parent, args) =>{
+      const userId = parent.userId;
+      const users = await UserModel.find({ role: ROLE_USER });
+      return  users.find(user => user.id === userId)
+    }
   },
   Mutation: {
     //Warehouse
@@ -23,11 +31,15 @@ export default {
     },
     updateWarehouse: async (parent, args) => {
       const warehouseId = args._id;
+      console.log("args",args)
       const result = await WarehouseModel.findByIdAndUpdate(warehouseId, {
         name: args.name,
         code: args.code,
+        userId:args.userId
       });
-      return result;
+      const users = await WarehouseModel.findOne({ _id: warehouseId });
+      console.log("re",users)
+      return users;
     },
   },
 };

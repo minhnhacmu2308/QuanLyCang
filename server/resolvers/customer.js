@@ -26,8 +26,10 @@ export default {
       }
     },
     updateCustomer: async (parent, args) => {
+      console.log("updatecustomer",args)
       const customerId = args._id;
       const result = await UserModel.findByIdAndUpdate(customerId, {
+        code:args.code,
         fullName: args.fullName,
         taxCode: args.taxCode,
         phone: args.phone,

@@ -1,10 +1,22 @@
 import { UserModel } from "../models/index.js";
 import { ROLE_DRIVER } from "../constants/index.js";
+import moment from 'moment'
 export default {
   Query: {
     drivers: async () => {
-      const drivers = await UserModel.find({ role: ROLE_DRIVER });
-      return drivers;
+      let arr = [];
+      let drivers = await UserModel.find({ role: ROLE_DRIVER });
+      drivers.forEach(x =>      
+         arr.push({"birthday":moment(x.birthday).format("yyyy-MM-DD"),
+         "fullName":x.fullName,
+         "_id":x._id,
+         "phone":x.phone,
+         "createdAt":x.createdAt,
+         "workingAt":x.workingAt,
+         "role":x.role,
+         "code":x.code
+        }));
+      return arr;
     },
   },
   Mutation: {
@@ -29,6 +41,7 @@ export default {
         code: args.code,
         birthday: args.birthday,
         workingAt: args.workingAt,
+        phone:args.phone
       });
       return result;
     },

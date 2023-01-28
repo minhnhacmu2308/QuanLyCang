@@ -4,6 +4,7 @@ export default gql`
   type Transequipment {
     _id: String
     type: String
+    code:String
     owner: String
     createdAt: Date
     updatedAt: Date
@@ -12,11 +13,12 @@ export default gql`
     transequipments: [Transequipment]
   }
   extend type Mutation {
-    addTransequipment(name: String!, owner: String!): Transequipment
+    addTransequipment(code:String!,type: String!, owner: String!): Transequipment
     deleteTransequipment(_id: String!): Boolean!
     updateTransequipment(
       _id: String!
-      name: String!
+      code:String!
+      type: String!
       owner: String!
     ): Transequipment
   }

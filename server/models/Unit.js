@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const unitSchema = new mongoose.Schema(
   {
+    code:{
+      type:String,
+      require:true
+    },
     name: {
       type: String,
       require: true,

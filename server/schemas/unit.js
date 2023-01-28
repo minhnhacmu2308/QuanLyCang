@@ -4,6 +4,7 @@ export default gql`
   type Unit {
     _id: String
     name: String
+    code:String
     description: String
     createdAt: Date
     updatedAt: Date
@@ -12,8 +13,8 @@ export default gql`
     units: [Unit]
   }
   extend type Mutation {
-    addUnit(name: String!, description: String!): Unit
+    addUnit(code:String!,name: String!, description: String!): Unit
     deleteUnit(_id: String!): Boolean!
-    updateUnit(_id: String!, name: String!, description: String!): Unit
+    updateUnit(_id: String!,code:String!, name: String!, description: String!): Unit
   }
 `;

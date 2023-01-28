@@ -3,6 +3,7 @@ import { gql } from "apollo-server-express";
 export default gql`
   type Vehicle {
     _id: String
+    code:String
     type: String
     owner: String
     createdAt: Date
@@ -12,11 +13,12 @@ export default gql`
     vehicles: [Vehicle]
   }
   extend type Mutation {
-    addVehicle(name: String!,owner: String!): Vehicle
+    addVehicle(code:String!,type: String!,owner: String!): Vehicle
     deleteVehicle(_id: String!): Boolean!
     updateVehicle(
       _id: String!
-      name: String!
+      code:String!
+      type: String!
       owner: String!
     ): Vehicle
   }

@@ -28,8 +28,9 @@ export default {
       const result = await TransequipmentModel.findByIdAndUpdate(
         transequipmentId,
         {
-          name: args.name,
+          type: args.type,
           code: args.code,
+          owner:args.owner
         }
       );
       return result;

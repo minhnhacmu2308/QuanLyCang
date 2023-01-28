@@ -2,20 +2,17 @@ import mongoose from "mongoose";
 
 const warehouseSchema = new mongoose.Schema(
   {
+    code:{
+      type:String,
+      require:true
+    },
     name: {
       type: String,
       require: true,
     },
-    user: {
-      userId: {
-        type: String,
-      },
-      fullNme: {
-        type: String,
-      },
-      role: {
-        type: String,
-      },
+    userId:{
+      type:String,
+      require:true
     },
   },
   { timestamps: true }

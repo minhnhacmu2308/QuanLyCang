@@ -18,9 +18,9 @@ function Category() {
       <div id="layoutSidenav_content">
           <main>
               <div className="container-fluid px-4">
-                  <h1 className="mt-4">Category</h1>
+                  <h1 className="mt-4">Danh mục</h1>
                   <ol className="breadcrumb mb-4">
-                      <li className="breadcrumb-item active">Category</li>
+                      <li className="breadcrumb-item active">Danh mục</li>
                   </ol>
                 </div>
               <div className='container'>

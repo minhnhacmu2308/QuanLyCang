@@ -1,4 +1,5 @@
 import { ManufacturerModel } from "../models/index.js";
+
 export default {
   Query: {
     manufacturers: async () => {

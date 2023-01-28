@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const packageSchema = new mongoose.Schema(
   {
+    code:{
+      type:String,
+      require:true
+    },
     size: {
       type: String,
       require: true,

@@ -9,6 +9,10 @@ function encrypt(text) {
 
 const userSchema = new mongoose.Schema(
   {
+    code:{
+      type:String, 
+      require:true
+    },
     fullName: {
       type: String,
       require: true,
@@ -41,7 +45,7 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     birthday: {
-      type: Date,
+      type: String,
     },
     workingAt: {
       type: String,
@@ -62,10 +66,6 @@ userSchema.statics.findByLogin = async function (login) {
   return user;
 };
 
-userSchema.pre("remove", function (next) {
-  this.model("Message").deleteMany({ userId: this._id }, next);
-});
-
 userSchema.pre("save", async function () {
   this.password = await this.generatePasswordHash();
 });
@@ -76,6 +76,8 @@ userSchema.methods.generatePasswordHash = async function () {
 
 userSchema.methods.validatePassword = async function (password) {
   const password_hash = encrypt(password);
+  console.log("hash",password_hash)
+  console.log("this",this.password)
   if (password_hash === this.password) {
     return true;
   }
