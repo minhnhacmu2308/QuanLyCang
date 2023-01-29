@@ -37,6 +37,7 @@ export const profile = async(payload) => {
       createdAt
       birthday
       address
+      image
       code
       role
     }
@@ -444,4 +445,37 @@ export const updateUser = async(payload) => {
     const data = await res.json();
     return data;
 }
+
+export const updateProfile = async(payload) => {
+  const query = `mutation Mutation($id: String!,$fullName: String!, $birthday: String!, $address: String!, $image: String!) {
+    updateProfile(_id: $id, fullName: $fullName, birthday: $birthday, address: $address, image: $image) {
+      address
+      birthday
+      _id
+      code
+      fullName
+      image
+      role
+      userName
+    }
+  }`
+  const variables = {
+      id: payload._id,
+      fullName: payload.fullName,
+      birthday: payload.birthday,
+      image: payload.image,
+      address:payload.address,
+  }
+  const res = await fetch(`${GRAPHQL_SERVER}/graphql`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+      },
+      body: JSON.stringify({ query, variables })
+  });
+  const data = await res.json();
+  return data;
+}
+
 

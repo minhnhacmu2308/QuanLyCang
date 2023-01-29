@@ -11,7 +11,7 @@ import {
     TextField,
     Tooltip,
   } from "@mui/material";
-import { changePassword ,profile} from "../../utils/userUtils";
+import { changePassword ,profile,updateProfile} from "../../utils/userUtils";
 import jwt from 'jwt-decode'
 import Toast from "../Toast/index.jsx";
 import {MESSAGE_SUCCESS} from "../../constants/index.js";
@@ -41,7 +41,7 @@ function ProfileInput({ ...props }) {
         if(token !== null){
           const user = await jwt(token); 
           const data = await profile({id:user.id});
-          setUser(data);
+          setFields(data.data.user);
           console.log("data",data)        
         }
        
@@ -49,24 +49,16 @@ function ProfileInput({ ...props }) {
       decodeToken();
     },[])
     const onSubmit = async (payload) =>{
-        const token = await localStorage.getItem("token");
-        console.log("token11",token);
-        if(token !== null){
-          const user = await jwt(token); 
-          console.log("user",user.id)
-          const data = {
-            ProfileId: user.id,
-            password:payload.passwordNew
-        }
-        const result = await Profile(data);
+      fields["image"] = "https://images.pexels.com/photos/127160/pexels-photo-127160.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
+      await setFields(fields);
+      const result = await updateProfile(fields);
+      console.log("data",result);
         handleOpen({
             color: "#009933",
-            title: `Đổi mật khẩu ${MESSAGE_SUCCESS}`,
+            title: `Cập nhật thông tin cá nhân  ${MESSAGE_SUCCESS}`,
             type: "success",
         });
         setFields({})
-        }
-       
     }
     const handleClose = (event, reason) => {
         if (reason === "clickaway") {
@@ -137,14 +129,14 @@ function ProfileInput({ ...props }) {
                       </label>
                   </div>
                   <div style={{marginLeft: "0px",marginTop:"10px"}} id="divImage" >
-                      <img id="avatar" height="150" width="150" style={{borderRadius: "100px"}}  src="https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"/>
+                      <img id="avatar" height="150" width="150" style={{borderRadius: "100px"}}  src={fields.image}/>
                   </div>
               </div>
           </div>
        </div>
+       <label>Họ và tên:</label>
        <TextField
-                key="fullName"
-                label="Họ và tên"
+                key="fullName"           
                 value={fields["fullName"]}
                 error={!!errors["fullName"]}
                 required={true}
@@ -155,9 +147,9 @@ function ProfileInput({ ...props }) {
                 onChange={(e) => handleChange(e)}
               />
                 <span style={{marginRight: "50px"}}></span>
+                <label>Tên người dùng:</label>
                 <TextField
                 key="userName"
-                label="Tên người dùng"
                 value={fields["userName"]}
                 error={!!errors["userName"]}
                 required={true}
@@ -168,9 +160,9 @@ function ProfileInput({ ...props }) {
                 onChange={(e) => handleChange(e)}
               />
                <span style={{marginRight: "50px"}}></span>
+               <label>Địa chỉ:</label>
                 <TextField
                 key="address"
-                label="Địa chỉ"
                 value={fields["address"]}
                 error={!!errors["address"]}
                 required={true}

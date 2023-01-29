@@ -7,6 +7,7 @@ import TransequipmentModel from "./Transequipment.js";
 import ContainerModel from "./Container.js";
 import PackageModel from "./Package.js";
 import UserModel from "./User.js";
+import ProductModel from "./Product.js";
 
 
 export {
@@ -19,4 +20,5 @@ export {
   ContainerModel,
   PackageModel,
   UserModel,
+  ProductModel
 };

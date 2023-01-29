@@ -9,6 +9,7 @@ import transequipmentResolver from "./transequipment.js";
 import vehicleResolver from "./vehicle.js"
 import packageResolver from "./package.js";
 import containerResolver from "./container.js";
+import productResolver from "./product.js";
 import { GraphQLScalarType } from "graphql";
 import GraphQLUpload from "./graphql-upload/GraphQLUpload.mjs";
 
@@ -28,4 +29,4 @@ const customResolver = {
 };
 
 export default [customResolver, categoryResolver, unitResolver,customerResolver,
-  driverResolver,manufacturerResolver,userResolver,warehouseResolver,transequipmentResolver,vehicleResolver,packageResolver,containerResolver];
+  driverResolver,manufacturerResolver,userResolver,warehouseResolver,transequipmentResolver,vehicleResolver,packageResolver,containerResolver,productResolver];

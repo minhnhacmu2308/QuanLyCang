@@ -10,6 +10,7 @@ import manufacturerSchema from "./manufacturer.js";
 import vehicleSchema from "./vehicle.js"
 import packageSchema from "./package.js";
 import containerSchema from "./container.js"
+import productSchema from "./product.js"
 
 const baseSchema = gql`
   scalar Date
@@ -27,4 +28,4 @@ const baseSchema = gql`
   }
 `;
 
-export default [baseSchema, categorySchema, unitSchema,customerSchema,driverSchema,userSchema,manufacturerSchema,warehouseSchema,transequipmentSchema,vehicleSchema,packageSchema,containerSchema];
+export default [baseSchema, categorySchema, unitSchema,customerSchema,driverSchema,productSchema,userSchema,manufacturerSchema,warehouseSchema,transequipmentSchema,vehicleSchema,packageSchema,containerSchema];

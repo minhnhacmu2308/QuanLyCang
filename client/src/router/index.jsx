@@ -11,10 +11,12 @@ import { containerLoader } from "../utils/containerUtils";
 import { vehicleLoader } from "../utils/vehicleUtil";
 import { driverLoader,customerLoader ,userLoader} from "../utils/userUtils";
 import {manufacturerLoader} from "../utils/manufacturerUtils";
+import { productLoader } from "../utils/productUtils";
 import {transequipmentLoader} from "../utils/transequipmentUtills";
 import Manufacturer from "../pages/manufacturer";
 import Vehicle from "../pages/Vehicle";
 import Transequipment from "../pages/Transequipment";
+import Product from "../pages/Product";
 import Warehouse from "../pages/Warehouse";
 import Package from "../pages/Package"
 import Container from "../pages/Container";
@@ -107,6 +109,11 @@ export default createBrowserRouter([
       {
         element: <Profile />,
         path: "/profile",
+      },
+      {
+        element: <Product />,
+        path: "/product",
+        loader: productLoader,
       },
     ],
   },

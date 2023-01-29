@@ -62,6 +62,9 @@ export default function Menuleft(){
                 <Link className="nav-link" to="/vehicle">
                  Phương tiện
                 </Link>
+                <Link className="nav-link" to="/product">
+                 Sản phẩm
+                </Link>
                 <Link className="nav-link" to="/transequipment">
                  Thiết bị vận chuyển
                 </Link>
