@@ -4,33 +4,40 @@ import Home from "../pages/Home.jsx";
 import Category from "../pages/Category";
 import Unit from "../pages/Unit";
 import { categoryLoader } from "../utils/categoryUtils";
-import { warehouseLoader} from "../utils/warehouseUtils";
+import { warehouseLoader } from "../utils/warehouseUtils";
 import { unitLoader } from "../utils/unitUtils";
 import { packageLoader } from "../utils/packageUtils";
 import { containerLoader } from "../utils/containerUtils";
 import { vehicleLoader } from "../utils/vehicleUtil";
-import { driverLoader,customerLoader ,userLoader} from "../utils/userUtils";
-import {manufacturerLoader} from "../utils/manufacturerUtils";
+import { orderLoader } from "../utils/orderUtils";
+import { driverLoader, customerLoader, userLoader } from "../utils/userUtils";
+import { manufacturerLoader } from "../utils/manufacturerUtils";
 import { productLoader } from "../utils/productUtils";
-import {transequipmentLoader} from "../utils/transequipmentUtills";
+import { transequipmentLoader } from "../utils/transequipmentUtills";
 import Manufacturer from "../pages/manufacturer";
 import Vehicle from "../pages/Vehicle";
 import Transequipment from "../pages/Transequipment";
 import Product from "../pages/Product";
 import Warehouse from "../pages/Warehouse";
-import Package from "../pages/Package"
+import Package from "../pages/Package";
 import Container from "../pages/Container";
+import Order from "../pages/Order";
 import Driver from "../pages/Driver";
 import Customer from "../pages/Customer";
 import User from "../pages/User";
 import ChangePassword from "../pages/ChangePassword";
 import Profile from "../pages/Profile";
-import AuthProvider from "../context/AuthProvider"
+import CreateOder from "../pages/CreateOder";
+import AuthProvider from "../context/AuthProvider";
 import path from "path";
 
-
 const AuthLayout = () => {
-  return (<AuthProvider> <Outlet /></AuthProvider> );
+  return (
+    <AuthProvider>
+      {" "}
+      <Outlet />
+    </AuthProvider>
+  );
 };
 
 export default createBrowserRouter([
@@ -40,12 +47,10 @@ export default createBrowserRouter([
       {
         element: <Login />,
         path: "/login",
-       
       },
       {
         element: <Home />,
         path: "/",
-       
       },
       {
         element: <Category />,
@@ -59,7 +64,7 @@ export default createBrowserRouter([
       },
       {
         element: <ChangePassword />,
-        path:"/change-password"
+        path: "/change-password",
       },
       {
         element: <Manufacturer />,
@@ -114,6 +119,16 @@ export default createBrowserRouter([
         element: <Product />,
         path: "/product",
         loader: productLoader,
+      },
+      {
+        element: <Order />,
+        path: "/order-input",
+        loader: orderLoader,
+      },
+      {
+        element: <CreateOder />,
+        path: "/create-order",
+        loader: orderLoader,
       },
     ],
   },

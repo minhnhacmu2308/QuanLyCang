@@ -8,7 +8,7 @@ import ContainerModel from "./Container.js";
 import PackageModel from "./Package.js";
 import UserModel from "./User.js";
 import ProductModel from "./Product.js";
-
+import OrderModel from "./Order.js";
 
 export {
   CategoryModel,
@@ -20,5 +20,6 @@ export {
   ContainerModel,
   PackageModel,
   UserModel,
-  ProductModel
+  ProductModel,
+  OrderModel,
 };

@@ -14,10 +14,14 @@ import {
 import MaterialReactTable from "material-react-table";
 import moment from "moment";
 import { useCallback, useMemo, useState } from "react";
-import { addContainer, deleteContainer, updateContainer } from "../../utils/ContainerUtils.js";
+import {
+  addContainer,
+  deleteContainer,
+  updateContainer,
+} from "../../utils/ContainerUtils.js";
 import { generateId } from "../../utils/utils.js";
 import Toast from "../Toast/index.jsx";
-import {MESSAGE_SUCCESS} from "../../constants/index.js";
+import { MESSAGE_SUCCESS } from "../../constants/index.js";
 
 function ContainerTable({ ...props }) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -58,8 +62,9 @@ function ContainerTable({ ...props }) {
 
   const handleCreateNewRow = async (values) => {
     const code = generateId(20);
-    console.log("code",code)
+
     values.code = code;
+    console.log("create", values);
     const data = await addContainer(values);
     var today = new Date();
     const value = data.data.addContainer;
@@ -75,13 +80,14 @@ function ContainerTable({ ...props }) {
 
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
     const variable = row.original;
-    console.log("values",values.size)
+    console.log("values", values.size);
     variable.color = values.color;
     variable.size = values.size;
+    variable.name = values.name;
     variable.owner = values.owner;
     if (!Object.keys(validationErrors).length) {
       tableData[row.index] = values;
-      console.log("values",values);
+      console.log("values", values);
       //send/receive api updates here, then refetch or update local table data for re-render
       setTableData([...tableData]);
       const data = await updateContainer(variable);
@@ -101,9 +107,7 @@ function ContainerTable({ ...props }) {
   const handleDeleteRow = useCallback(
     async (row) => {
       if (
-        !confirm(
-          `Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("code")}`
-        )
+        !confirm(`Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("code")}`)
       ) {
         return;
       }
@@ -129,8 +133,12 @@ function ContainerTable({ ...props }) {
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
           const isValid =
-            cell.column.id === "color" || cell.column.id === "size"|| cell.column.id === "owner"
-              ? validateRequired(event.target.value)  : null;
+            cell.column.id === "color" ||
+            cell.column.id === "name" ||
+            cell.column.id === "size" ||
+            cell.column.id === "owner"
+              ? validateRequired(event.target.value)
+              : null;
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
@@ -161,6 +169,15 @@ function ContainerTable({ ...props }) {
           type: "text",
           disabled: true,
           hidden: true,
+        }),
+      },
+      {
+        accessorKey: "name",
+        header: "Tên",
+        muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps(cell),
+          type: "text",
         }),
       },
       {
@@ -281,53 +298,58 @@ export const CreateNewAccountModal = ({
       return acc;
     }, {})
   );
-  const [fields, setFields] = useState({})
-  const [errors, setErrors] = useState({})
+  const [fields, setFields] = useState({});
+  const [errors, setErrors] = useState({});
 
   const onChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
-    console.log("valuessss",values);
+    console.log("valuessss", values);
   };
 
   const handleSubmit = (e) => {
     if (handleValidation()) {
-        onSubmit(fields);
-        onClose();
-        setFields({})
-    } 
+      onSubmit(fields);
+      onClose();
+      setFields({});
+    }
     return;
   };
 
-  const handleValidation =()=> {
+  const handleValidation = () => {
     let errors = {};
     let formIsValid = true;
     //Name
     if (!fields["color"]) {
-        console.log("true")
-        formIsValid = false;
-        errors["color"] = "Không thể để trống";
+      console.log("true");
+      formIsValid = false;
+      errors["color"] = "Không thể để trống";
+    }
+    if (!fields["name"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["name"] = "Không thể để trống";
     }
     if (!fields["size"]) {
-        console.log("true")
-        formIsValid = false;
-        errors["size"] = "Không thể để trống";
+      console.log("true");
+      formIsValid = false;
+      errors["size"] = "Không thể để trống";
     }
     if (!fields["owner"]) {
-        console.log("true")
-        formIsValid = false;
-        errors["owner"] = "Không thể để trống";
+      console.log("true");
+      formIsValid = false;
+      errors["owner"] = "Không thể để trống";
     }
 
     setErrors(errors);
     return formIsValid;
-  }
+  };
 
-  const  handleChange = (e) => {
-    console.log("e",e)
+  const handleChange = (e) => {
+    console.log("e", e);
     fields[e.target.name] = e.target.value;
     setFields(fields);
     setErrors({ ...errors, [e.target.name]: "" });
-  }
+  };
 
   return (
     <Dialog open={open}>
@@ -341,36 +363,46 @@ export const CreateNewAccountModal = ({
               gap: "1.5rem",
             }}
           >
-              <TextField
-                key="color"
-                label="Màu sắc"
-                value={fields["color"]}
-                error={!!errors["color"]}
-                required={true}
-                helperText={errors["color"]}
-                name="color"
-                onChange={(e) => handleChange(e)}
-              />
-              <TextField
-                key="size"
-                label="Kích thước"
-                value={fields["size"]}
-                error={!!errors["size"]}
-                required={true}
-                helperText={errors["size"]}
-                name="size"
-                onChange={(e) => handleChange(e)}
-              />
-              <TextField
-                key="owner"
-                label="Chủ sở hữu"
-                value={fields["owner"]}
-                error={!!errors["owner"]}
-                required={true}
-                helperText={errors["owner"]}
-                name="owner"
-                onChange={(e) => handleChange(e)}
-              />
+            <TextField
+              key="name"
+              label="Tên"
+              value={fields["name"]}
+              error={!!errors["name"]}
+              required={true}
+              helperText={errors["name"]}
+              name="name"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="color"
+              label="Màu sắc"
+              value={fields["color"]}
+              error={!!errors["color"]}
+              required={true}
+              helperText={errors["color"]}
+              name="color"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="size"
+              label="Kích thước"
+              value={fields["size"]}
+              error={!!errors["size"]}
+              required={true}
+              helperText={errors["size"]}
+              name="size"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="owner"
+              label="Chủ sở hữu"
+              value={fields["owner"]}
+              error={!!errors["owner"]}
+              required={true}
+              helperText={errors["owner"]}
+              name="owner"
+              onChange={(e) => handleChange(e)}
+            />
           </Stack>
         </form>
       </DialogContent>
@@ -378,14 +410,14 @@ export const CreateNewAccountModal = ({
         <Button
           onClick={() => {
             onClose();
-            setFields({})
-            setErrors({})
+            setFields({});
+            setErrors({});
           }}
         >
           Trờ về
         </Button>
         <Button color="primary" onClick={handleSubmit} variant="contained">
-          Tạo 
+          Tạo
         </Button>
       </DialogActions>
     </Dialog>

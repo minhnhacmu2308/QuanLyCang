@@ -15,8 +15,11 @@ import { changePassword ,profile,updateProfile} from "../../utils/userUtils";
 import jwt from 'jwt-decode'
 import Toast from "../Toast/index.jsx";
 import {MESSAGE_SUCCESS} from "../../constants/index.js";
+import axios from "axios";
 function ProfileInput({ ...props }) {
     const [fields, setFields] = useState({})
+    const [image,setImage] = useState();
+    const [loading,setLoading] = useState("default");
     const [errors, setErrors] = useState({})
     const [user,setUser] = useState("");
     const [toastData, setToastData] = useState({
@@ -42,6 +45,7 @@ function ProfileInput({ ...props }) {
           const user = await jwt(token); 
           const data = await profile({id:user.id});
           setFields(data.data.user);
+          setImage(data.data.user.image);
           console.log("data",data)        
         }
        
@@ -49,7 +53,7 @@ function ProfileInput({ ...props }) {
       decodeToken();
     },[])
     const onSubmit = async (payload) =>{
-      fields["image"] = "https://images.pexels.com/photos/127160/pexels-photo-127160.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
+      fields["image"] = image;
       await setFields(fields);
       const result = await updateProfile(fields);
       console.log("data",result);
@@ -67,6 +71,32 @@ function ProfileInput({ ...props }) {
     
         setAlertState(false);
     };
+    const onChangeImage = async (e) =>{
+      setLoading("false")
+      const formData = new FormData();
+      console.log("file", e.target.files[0])
+      // Update the formData object
+      formData.append(
+        "image",
+        e.target.files[0]
+      );
+      let url = "http://localhost:3000/admin/upload-image";
+      try {
+        const response = await axios({
+          method: "post",
+          url: url,
+          data: formData,
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        if(response.status === 200){
+          setImage(response.data.secure_url);
+          setLoading("true")
+        }
+        console.log("res",response)
+      } catch(error) {
+        console.log(error)
+      }
+    }
     const handleSubmit = (e) => {
         console.log("E",fields)
         if (handleValidation()) {
@@ -125,11 +155,13 @@ function ProfileInput({ ...props }) {
               <div className="col-md-12 text-center mb-5">              
                   <div className="form-group">
                       <label className="btn btn-primary btn-md btn-file">
-                          Chọn ảnh<input type="file" name="file" id="fileUpload" hidden />
+                          Chọn ảnh<input type="file" name="image" onChange={(e)=>onChangeImage(e)} id="fileUpload" hidden />
                       </label>
                   </div>
                   <div style={{marginLeft: "0px",marginTop:"10px"}} id="divImage" >
-                      <img id="avatar" height="150" width="150" style={{borderRadius: "100px"}}  src={fields.image}/>
+                      <img id="avatar" height="150" width="150" style={{borderRadius: "100px"}}  src={image}/>
+                      {loading !== "default" ?  (loading === "false" ?<p>Loading....</p> : <p style={{color:"green"}}>Upload ảnh thành công</p>):null}
+                      
                   </div>
               </div>
           </div>

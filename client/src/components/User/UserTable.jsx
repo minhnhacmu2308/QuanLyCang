@@ -23,6 +23,7 @@ import {useMutation,gql} from "@apollo/client";
 import {ApolloClient,ApolloProvider,InMemoryCache} from "@apollo/client";
 import {createUploadLink} from "apollo-upload-client"
 import CryptoJS from "crypto-js";
+import axios from "axios";
 
 function encrypt(text) {
   return CryptoJS.HmacSHA256(text, "quanlycang").toString(
@@ -81,7 +82,6 @@ function UserTable({ ...props }) {
     console.log("values",values)
     values.code = code;
     values.role = ROLE_USER;
-    values.image = "https://images.pexels.com/photos/127160/pexels-photo-127160.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
     const data = await addUser(values);
     var today = new Date();
     const value = data.data.addUser;
@@ -120,7 +120,6 @@ function UserTable({ ...props }) {
       exitEditingMode(); //required to exit editing mode and close modal
     }
   };
-
   const findUser = (id) => {
     var result = -1;
     tableData.forEach((value, index) => {
@@ -355,42 +354,32 @@ export const CreateNewAccountModal = ({
     }, {})
   );
   const [fields, setFields] = useState({})
+  const [image, setImage] = useState("")
   const [errors, setErrors] = useState({})
-  const UPLOAD_FILE = gql`mutation UploadFile($file: Upload!) {
-  uploadFile(file: $file) {
-    url
-  }
-}`;
-  const [uploadFile] = useMutation(UPLOAD_FILE,{
-   
-    onCompleted:data => console.log(data)
-  })
 
   const handleFileChange = async (e) =>{
-
-    const query = `mutation UploadFile($file: Upload!) {
-      uploadFile(file: $file) {
-        url
-      }
-    }`;
-    const file  = e.target.files[0];
-    console.log("file",file)
-    if(!file) return;
     const formData = new FormData();
-    formData.append('file', file);
-    //  const variables = { variables:{file:file}};
-    uploadFile({ variables:{file:file}})
-    // const res = await fetch(`http://localhost:5000//graphql`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //         'Accept': 'application/json'
-    //     },
-    //     body: JSON.stringify({ query,variables })
-    // });
-    // const data = await res.json();
-    // console.log("hihi",data)
-   
+    console.log("file", e.target.files[0])
+    // Update the formData object
+    formData.append(
+      "image",
+      e.target.files[0]
+    );
+    let url = "http://localhost:3000/admin/upload-image";
+    try {
+      const response = await axios({
+        method: "post",
+        url: url,
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if(response.status === 200){
+        setImage(response.data.secure_url);
+      }
+      console.log("res",response)
+    } catch(error) {
+      console.log(error)
+    }
   }
 
   const onChange = (e) => {
@@ -401,9 +390,11 @@ export const CreateNewAccountModal = ({
   const handleSubmit = (e) => {
     console.log("E",fields)
     if (handleValidation()) {
+      fields["image"] = image;
         onSubmit(fields);
         onClose();
         setFields({})
+        setImage("")
     } 
     return;
   };
@@ -527,6 +518,9 @@ export const CreateNewAccountModal = ({
                 type="file"
                 onChange={(e) => handleFileChange(e)}
               />
+              <div style={{marginLeft: "0px",marginTop:"10px"}} id="divImage" >
+                      <img id="avatar" height="190" width="100%"   src={image == "" ? 'https://st.quantrimang.com/photos/image/072015/22/avatar.jpg' : image}/>
+               </div>
                
           </Stack>
         </form>
@@ -536,6 +530,7 @@ export const CreateNewAccountModal = ({
           onClick={() => {
             onClose();
             setFields({})
+            setImage("")
             setErrors({})
           }}
         >
