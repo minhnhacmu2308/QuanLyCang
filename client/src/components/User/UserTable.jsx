@@ -17,28 +17,14 @@ import { useCallback, useMemo, useState } from "react";
 import { addUser, deleteUser, updateUser } from "../../utils/userUtils.js";
 import { generateId } from "../../utils/utils.js";
 import Toast from "../Toast/index.jsx";
-import {MESSAGE_SUCCESS} from "../../constants/index.js";
+import { MESSAGE_SUCCESS } from "../../constants/index.js";
 import { ROLE_USER } from "../../../../server/constants/index.js";
-import {useMutation,gql} from "@apollo/client";
-import {ApolloClient,ApolloProvider,InMemoryCache} from "@apollo/client";
-import {createUploadLink} from "apollo-upload-client"
 import CryptoJS from "crypto-js";
 import axios from "axios";
 
 function encrypt(text) {
-  return CryptoJS.HmacSHA256(text, "quanlycang").toString(
-    CryptoJS.enc.Hex
-  );
+  return CryptoJS.HmacSHA256(text, "quanlycang").toString(CryptoJS.enc.Hex);
 }
-
-const client = new ApolloClient({
-    link:createUploadLink({
-      uri:"http://localhost:5000//graphql"
-    }),
-    cache: new InMemoryCache()
-  });
-
-
 
 function UserTable({ ...props }) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -79,7 +65,7 @@ function UserTable({ ...props }) {
 
   const handleCreateNewRow = async (values) => {
     const code = generateId(20);
-    console.log("values",values)
+    console.log("values", values);
     values.code = code;
     values.role = ROLE_USER;
     const data = await addUser(values);
@@ -99,16 +85,17 @@ function UserTable({ ...props }) {
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
     const variable = row.original;
     const user = await findUser(variable._id);
-    const password_hash = await  encrypt(values.password);
+    const password_hash = await encrypt(values.password);
     variable.fullName = values.fullName;
     variable.userName = values.userName;
     variable.address = values.address;
-    variable.birthday= values.birthday;
-    variable.password = user.password === values.password ? values.password : password_hash;
+    variable.birthday = values.birthday;
+    variable.password =
+      user.password === values.password ? values.password : password_hash;
     if (!Object.keys(validationErrors).length) {
       values.password = password_hash;
       tableData[row.index] = values;
-      console.log("values",values);
+      console.log("values", values);
       //send/receive api updates here, then refetch or update local table data for re-render
       setTableData([...tableData]);
       const data = await updateUser(variable);
@@ -137,9 +124,7 @@ function UserTable({ ...props }) {
   const handleDeleteRow = useCallback(
     async (row) => {
       if (
-        !confirm(
-          `Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("code")}`
-        )
+        !confirm(`Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("code")}`)
       ) {
         return;
       }
@@ -165,8 +150,13 @@ function UserTable({ ...props }) {
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
           const isValid =
-            cell.column.id === "fullName" || cell.column.id === "address"|| cell.column.id === "birthday" || cell.column.id === "userName" || cell.column.id === "password"
-              ? validateRequired(event.target.value)  : null;
+            cell.column.id === "fullName" ||
+            cell.column.id === "address" ||
+            cell.column.id === "birthday" ||
+            cell.column.id === "userName" ||
+            cell.column.id === "password"
+              ? validateRequired(event.target.value)
+              : null;
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
@@ -213,7 +203,7 @@ function UserTable({ ...props }) {
         header: "Tên người dùng",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps({...cell,}),
+          ...getCommonEditTextFieldProps({ ...cell }),
           type: "text",
           disabled: true,
           hidden: true,
@@ -233,7 +223,7 @@ function UserTable({ ...props }) {
         header: "Địa chỉ",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps({...cell,}),
+          ...getCommonEditTextFieldProps({ ...cell }),
           type: "text",
         }),
       },
@@ -242,9 +232,8 @@ function UserTable({ ...props }) {
         header: "Mật khẩu",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps({...cell,}),
+          ...getCommonEditTextFieldProps({ ...cell }),
           type: "text",
-        
         }),
       },
       {
@@ -252,10 +241,16 @@ function UserTable({ ...props }) {
         header: "Ảnh",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
         Cell: ({ cell, table }) => (
-          <img src={cell.getValue()} alt="" border="3" height="100" width="100" />
+          <img
+            src={cell.getValue()}
+            alt=""
+            border="3"
+            height="100"
+            width="100"
+          />
         ),
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps({...cell,}),
+          ...getCommonEditTextFieldProps({ ...cell }),
           type: "text",
           disabled: true,
           hidden: true,
@@ -330,7 +325,6 @@ function UserTable({ ...props }) {
         tableData={tableData}
         onClose={() => setCreateModalOpen(false)}
         onSubmit={handleCreateNewRow}
-        
       />
     </>
   );
@@ -353,18 +347,15 @@ export const CreateNewAccountModal = ({
       return acc;
     }, {})
   );
-  const [fields, setFields] = useState({})
-  const [image, setImage] = useState("")
-  const [errors, setErrors] = useState({})
+  const [fields, setFields] = useState({});
+  const [image, setImage] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const handleFileChange = async (e) =>{
+  const handleFileChange = async (e) => {
     const formData = new FormData();
-    console.log("file", e.target.files[0])
+    console.log("file", e.target.files[0]);
     // Update the formData object
-    formData.append(
-      "image",
-      e.target.files[0]
-    );
+    formData.append("image", e.target.files[0]);
     let url = "http://localhost:3000/admin/upload-image";
     try {
       const response = await axios({
@@ -373,52 +364,52 @@ export const CreateNewAccountModal = ({
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if(response.status === 200){
+      if (response.status === 200) {
         setImage(response.data.secure_url);
       }
-      console.log("res",response)
-    } catch(error) {
-      console.log(error)
+      console.log("res", response);
+    } catch (error) {
+      console.log(error);
     }
-  }
+  };
 
   const onChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
-    console.log("valuessss",values);
+    console.log("valuessss", values);
   };
 
   const handleSubmit = (e) => {
-    console.log("E",fields)
+    console.log("E", fields);
     if (handleValidation()) {
       fields["image"] = image;
-        onSubmit(fields);
-        onClose();
-        setFields({})
-        setImage("")
-    } 
+      onSubmit(fields);
+      onClose();
+      setFields({});
+      setImage("");
+    }
     return;
   };
 
-  const handleValidation =()=> {
+  const handleValidation = () => {
     let errors = {};
     let formIsValid = true;
     //Name
     if (!fields["fullName"]) {
-        formIsValid = false;
-        errors["fullName"] = "Không thể để trống";
+      formIsValid = false;
+      errors["fullName"] = "Không thể để trống";
     }
     if (!fields["userName"]) {
-        formIsValid = false;
-        errors["userName"] = "Không thể để trống";
+      formIsValid = false;
+      errors["userName"] = "Không thể để trống";
     }
 
     if (!fields["password"]) {
       formIsValid = false;
       errors["password"] = "Không thể để trống";
-  }
+    }
     if (!fields["address"]) {
-        formIsValid = false;
-        errors["address"] = "Không thể để trống";
+      formIsValid = false;
+      errors["address"] = "Không thể để trống";
     }
 
     // if (!fields["image"]) {
@@ -427,20 +418,19 @@ export const CreateNewAccountModal = ({
     // }
 
     if (!fields["birthday"]) {
-        formIsValid = false;
-        errors["birthday"] = "Không thể để trống";
+      formIsValid = false;
+      errors["birthday"] = "Không thể để trống";
     }
-
 
     setErrors(errors);
     return formIsValid;
-  }
+  };
 
-  const  handleChange = (e) => {
+  const handleChange = (e) => {
     fields[e.target.name] = e.target.value;
     setFields(fields);
     setErrors({ ...errors, [e.target.name]: "" });
-  }
+  };
 
   return (
     <Dialog open={open}>
@@ -454,74 +444,82 @@ export const CreateNewAccountModal = ({
               gap: "1.5rem",
             }}
           >
-              <TextField
-                key="fullName"
-                label="Họ và tên"
-                value={fields["fullName"]}
-                error={!!errors["fullName"]}
-                required={true}
-                helperText={errors["fullName"]}
-                name="fullName"
-                onChange={(e) => handleChange(e)}
+            <TextField
+              key="fullName"
+              label="Họ và tên"
+              value={fields["fullName"]}
+              error={!!errors["fullName"]}
+              required={true}
+              helperText={errors["fullName"]}
+              name="fullName"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="userName"
+              label="Tên người dùng"
+              value={fields["userName"]}
+              error={!!errors["userName"]}
+              required={true}
+              helperText={errors["userName"]}
+              name="userName"
+              type="text"
+              onChange={(e) => handleChange(e)}
+            />
+            <label>Ngày sinh:</label>
+            <TextField
+              key="birthday"
+              value={fields["birthday"]}
+              error={!!errors["birthday"]}
+              required={true}
+              helperText={errors["birthday"]}
+              name="birthday"
+              type="date"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="address"
+              label="Địa chỉ"
+              value={fields["address"]}
+              error={!!errors["address"]}
+              required={true}
+              helperText={errors["address"]}
+              name="address"
+              type="text"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="password"
+              label="Mật khẩu"
+              value={fields["password"]}
+              error={!!errors["password"]}
+              required={true}
+              helperText={errors["password"]}
+              name="password"
+              type="password"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="image"
+              value={fields["image"]}
+              error={!!errors["image"]}
+              required={true}
+              helperText={errors["image"]}
+              name="image"
+              type="file"
+              onChange={(e) => handleFileChange(e)}
+            />
+            <div style={{ marginLeft: "0px", marginTop: "10px" }} id="divImage">
+              <img
+                id="avatar"
+                height="190"
+                width="100%"
+                src={
+                  image == ""
+                    ? "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
+                    : image
+                }
               />
-              <TextField
-                key="userName"
-                label="Tên người dùng"
-                value={fields["userName"]}
-                error={!!errors["userName"]}
-                required={true}
-                helperText={errors["userName"]}
-                name="userName"
-                type="text"
-                onChange={(e) => handleChange(e)}
-              />
-              <label>Ngày sinh:</label>
-              <TextField
-                key="birthday"
-                value={fields["birthday"]}
-                error={!!errors["birthday"]}
-                required={true}
-                helperText={errors["birthday"]}
-                name="birthday"
-                type="date"
-                onChange={(e) => handleChange(e)}
-              />
-               <TextField
-                key="address"
-                label="Địa chỉ"
-                value={fields["address"]}
-                error={!!errors["address"]}
-                required={true}
-                helperText={errors["address"]}
-                name="address"
-                type="text"
-                onChange={(e) => handleChange(e)}
-              />
-               <TextField
-                key="password"
-                label="Mật khẩu"
-                value={fields["password"]}
-                error={!!errors["password"]}
-                required={true}
-                helperText={errors["password"]}
-                name="password"
-                type="password"
-                onChange={(e) => handleChange(e)}
-              />
-                <TextField
-                key="image"
-                value={fields["image"]}
-                error={!!errors["image"]}
-                required={true}
-                helperText={errors["image"]}
-                name="image"
-                type="file"
-                onChange={(e) => handleFileChange(e)}
-              />
-              <div style={{marginLeft: "0px",marginTop:"10px"}} id="divImage" >
-                      <img id="avatar" height="190" width="100%"   src={image == "" ? 'https://st.quantrimang.com/photos/image/072015/22/avatar.jpg' : image}/>
-               </div>
-               
+            </div>
           </Stack>
         </form>
       </DialogContent>
@@ -529,15 +527,15 @@ export const CreateNewAccountModal = ({
         <Button
           onClick={() => {
             onClose();
-            setFields({})
-            setImage("")
-            setErrors({})
+            setFields({});
+            setImage("");
+            setErrors({});
           }}
         >
           Trờ về
         </Button>
         <Button color="primary" onClick={handleSubmit} variant="contained">
-          Tạo 
+          Tạo
         </Button>
       </DialogActions>
     </Dialog>

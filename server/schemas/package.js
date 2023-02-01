@@ -1,9 +1,10 @@
 import { gql } from "apollo-server-express";
 
-export default gql `
+export default gql`
   type Package {
     _id: String
     code: String
+    name: String
     size: String
     color: String
     owner: String
@@ -14,8 +15,21 @@ export default gql `
     packages: [Package]
   }
   extend type Mutation {
-    addPackage(code:String!,size: String!,color: String!,owner: String!): Package
+    addPackage(
+      code: String!
+      size: String!
+      name: String!
+      color: String!
+      owner: String!
+    ): Package
     deletePackage(_id: String!): Boolean!
-    updatePackage(_id: String!,code:String!, size: String!,color: String!,owner: String!): Package
+    updatePackage(
+      _id: String!
+      code: String!
+      size: String!
+      name: String!
+      color: String!
+      owner: String!
+    ): Package
   }
 `;

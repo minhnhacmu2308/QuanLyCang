@@ -1,4 +1,9 @@
-import { Delete, Edit } from "@mui/icons-material";
+import {
+  Delete,
+  Edit,
+  CallSplitOutlined,
+  DetailsOutlined,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -16,33 +21,44 @@ import {
 import MaterialReactTable from "material-react-table";
 import moment from "moment";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { addOrder, deleteOrder, updateOrder } from "../../utils/OrderUtils.js";
+import {
+  addOrder,
+  deleteOrder,
+  updateOrder,
+  deleteOrderNew,
+} from "../../utils/OrderUtils.js";
 import { generateId } from "../../utils/utils.js";
 import Toast from "../Toast/index.jsx";
 import { MESSAGE_SUCCESS } from "../../constants/index.js";
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function OrderTable({ ...props }) {
+  console.log("props", props);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [dataUpdate, setDataUpdate] = useState({});
   const [tableData, setTableData] = useState(
-    () => props.props.data.data.orders
+    () => props.props.data?.data?.orders
   );
   const [drivers, setDrivers] = useState(
-    () => props.props.drivers.data.drivers
+    () => props.props.drivers?.data?.drivers
   );
   const [vehicles, setVehicles] = useState(
-    () => props.props.vehicles.data.vehicles
+    () => props.props.vehicles?.data?.vehicles
   );
   const [warehouses, setWarehouses] = useState(
-    () => props.props.warehouses.data.warehouses
+    () => props.props.warehouses?.data?.warehouses
   );
   const [transequipments, setTransequipments] = useState(
-    () => props.props.transequipments.data.transequipments
+    () => props.props.transequipments?.data?.transequipments
   );
+  const [customers, setCustomers] = useState(
+    () => props.props.customers?.data?.customers
+  );
+  const [orderId, setOrderId] = useState();
   const navigate = useNavigate();
 
   const [toastData, setToastData] = useState({
@@ -79,23 +95,22 @@ function OrderTable({ ...props }) {
     setAlertState(true);
   };
 
-  const handleCreateNewRow = async (values, unitId, categoryId) => {
-    const code = generateId(20);
-    values.code = code;
-    values.unitId = unitId;
-    values.categoryId = categoryId;
-    const data = await addOrder(values);
-    console.log("data", data);
-    var today = new Date();
-    const value = data.data.addOrder;
-    value.createdAt = today;
-    tableData.push(value);
-    setTableData([...tableData]);
+  const handleCreateNewRow = async (values) => {
+    console.log("values", values);
+    let data = {
+      _id: orderId,
+      customerId: values.userId,
+      shipTo: values.shipTo,
+      typeInput: "Xuất hàng",
+    };
+    const result = await updateOrder(data);
+    console.log("result", result);
     handleOpen({
       color: "#009933",
-      title: `Thêm ${MESSAGE_SUCCESS}`,
+      title: `Xuất hàng  ${MESSAGE_SUCCESS}`,
       type: "success",
     });
+    navigate("/order-output")
   };
 
   const handleSaveRowEdits = async (values) => {
@@ -147,7 +162,9 @@ function OrderTable({ ...props }) {
   const handleDeleteRow = useCallback(
     async (row) => {
       if (
-        !confirm(`Bạn có chắc muốn xóa code này không  ${row.getValue("code")}`)
+        !confirm(
+          `Bạn có chắc muốn xóa code này không  ${row.getValue("receiptNo")}`
+        )
       ) {
         return;
       }
@@ -155,7 +172,7 @@ function OrderTable({ ...props }) {
       tableData.splice(row.index, 1);
       setTableData([...tableData]);
       const id = row.original._id;
-      const data = await deleteOrder({ id: id });
+      const data = await deleteOrderNew({ id: id });
       handleOpen({
         color: "#009933",
         title: `Xóa ${MESSAGE_SUCCESS}`,
@@ -164,6 +181,11 @@ function OrderTable({ ...props }) {
     },
     [tableData]
   );
+  const handleOutputRow = useCallback(async (row) => {
+    console.log("row", row);
+    setOrderId(row.original._id);
+    setCreateModalOpen(true);
+  }, []);
   const update = (row) => {
     console.log("row", row);
     setDataUpdate(row.original);
@@ -202,8 +224,8 @@ function OrderTable({ ...props }) {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "code", //access nested data with dot notation
-        header: "Code",
+        accessorKey: "receiptNo", //access nested data with dot notation
+        header: "ReceiptNo",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         size: 80,
 
@@ -215,8 +237,8 @@ function OrderTable({ ...props }) {
         }),
       },
       {
-        accessorKey: "name",
-        header: "Tên",
+        accessorKey: "type",
+        header: "Loại ",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
@@ -224,8 +246,8 @@ function OrderTable({ ...props }) {
         }),
       },
       {
-        accessorKey: "size",
-        header: "Kích cỡ",
+        accessorKey: "finishTime",
+        header: "Thời gian kết thúc",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
@@ -233,8 +255,8 @@ function OrderTable({ ...props }) {
         }),
       },
       {
-        accessorKey: "color",
-        header: "Màu sắc",
+        accessorKey: "createdBy",
+        header: "Người tạo",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
@@ -261,9 +283,22 @@ function OrderTable({ ...props }) {
       //   },
       {
         accessorKey: "createdAt", //normal accessorKey
-        header: "Created At",
+        header: "Ngày tạo",
         Cell: ({ cell, table }) => (
           <span>{moment(cell.getValue()).format("YYYY-MM-DD|HH:mm:ss")}</span>
+        ),
+        muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
+        //optional custom props
+        muiTableBodyCellEditTextFieldProps: ({ row }) => ({
+          disabled: true,
+          hidden: true,
+        }),
+      },
+      {
+        accessorKey: "typeInput", //normal accessorKey
+        header: "Trạng thái",
+        Cell: ({ cell, table }) => (
+          <span>{cell.getValue() == "Nhập hàng" ? "Mới" : "Đã xuất"}</span>
         ),
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
         //optional custom props
@@ -296,10 +331,24 @@ function OrderTable({ ...props }) {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: "flex", gap: "1rem" }}>
             <Tooltip arrow placement="left" title="Cập nhật">
-              <IconButton onClick={() => update(row)}>
-                <Edit />
-              </IconButton>
+              <Link
+                className="nav-link"
+                to={`/order/${row.original._id}`}
+              >
+                Chi tiết
+              </Link>
             </Tooltip>
+            {row.original.type == "Không lưu trữ" ? (
+              <Tooltip arrow placement="left" title="Xuất đơn">
+                <IconButton
+                  color="success"
+                  onClick={() => handleOutputRow(row)}
+                >
+                  <CallSplitOutlined />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+
             <Tooltip arrow placement="right" title="Xóa">
               <IconButton color="error" onClick={() => handleDeleteRow(row)}>
                 <Delete />
@@ -310,7 +359,7 @@ function OrderTable({ ...props }) {
         renderTopToolbarCustomActions={() => (
           <Button
             color="primary"
-            onClick={() =>   navigate("/create-order")}
+            onClick={() => navigate("/create-order")}
             variant="contained"
           >
             Thêm mới
@@ -332,7 +381,9 @@ function OrderTable({ ...props }) {
         transequipments={transequipments}
         vehicles={vehicles}
         warehouses={warehouses}
+        customers={customers}
       />
+
       <UpdateAccountModal
         columns={columns}
         open={updateModalOpen}
@@ -348,111 +399,104 @@ function OrderTable({ ...props }) {
     </>
   );
 }
-
 //example of creating a mui dialog modal for creating new rows
 export const CreateNewAccountModal = ({
   open,
   columns,
   onClose,
   onSubmit,
-  tableData,
-  drivers,
-  transequipments,
-  vehicles,
-  warehouses,
+  customers,
 }) => {
+  columns = columns.filter(
+    (x) => x.accessorKey === "shipTo" || x.accessorKey === "userId"
+  );
   const [values, setValues] = useState(() =>
     columns.reduce((acc, column) => {
       acc[column.accessorKey ?? ""] = "default";
       return acc;
     }, {})
   );
-  const [unitId, setUnitId] = useState("default");
-  const [categoryId, setCategoryId] = useState("default");
-  const [message, setMessage] = useState("");
+  const [fields, setFields] = useState({});
+  const [errors, setErrors] = useState({});
+
+  const onChange = (e) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+    console.log("valuessss", values);
+  };
 
   const handleSubmit = (e) => {
-    console.log("values", values);
-    if (
-      !!values.color &&
-      !!values.size &&
-      !!values.name &&
-      !!unitId &&
-      unitId !== "default" &&
-      !!categoryId &&
-      categoryId !== "default" &&
-      values.name !== "default" &&
-      values.color !== "default" &&
-      values.size !== "default"
-    ) {
-      //put your validation logic here
-      onSubmit(values, unitId, categoryId);
+    if (handleValidation()) {
+      onSubmit(fields);
       onClose();
-      setValues({ name: "default", color: "default", size: "default" });
-      setUnitId("default");
-      setCategoryId("default");
-    } else {
-      setValues({ name: "", color: "", size: "" });
-      setUnitId("");
-      setCategoryId("");
+      setFields({});
     }
+    return;
   };
-  const onChange = (e) => {
-    console.log("e", e.target.name);
-    setValues({ ...values, [e.target.name]: e.target.value });
+
+  const handleValidation = () => {
+    let errors = {};
+    let formIsValid = true;
+    //Name
+    if (!fields["shipTo"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["shipTo"] = "Không thể để trống";
+    }
+    if (!fields["userId"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["userId"] = "Không thể để trống";
+    }
+    setErrors(errors);
+    return formIsValid;
+  };
+
+  const handleChange = (e) => {
+    console.log("e", e);
+    fields[e.target.name] = e.target.value;
+    setFields(fields);
+    setErrors({ ...errors, [e.target.name]: "" });
   };
 
   return (
     <Dialog open={open}>
-      <DialogTitle textAlign="center">Thêm mới</DialogTitle>
+      <DialogTitle textAlign="center">Xuất đơn</DialogTitle>
       <DialogContent>
         <form onSubmit={(e) => e.preventDefault()}>
-          <Stack direction={"row"} spacing={{ xs: 1, sm: 2, md: 4 }}>
-            <TextField
-              key="name"
-              label="Tên"
-              error={!values.name}
-              required={true}
-              helperText={message}
-              name="name"
-              onChange={(e) => onChange(e)}
-            />
-            <TextField
-              key="color"
-              label="Màu sắc"
-              error={!values.color}
-              required={true}
-              helperText={message}
-              name="color"
-              onChange={(e) => onChange(e)}
-            />
-          </Stack>
           <Stack
-            direction={"row"}
-            style={{ marginTop: "10px" }}
-            spacing={{ xs: 1, sm: 2, md: 4 }}
+            sx={{
+              width: "100%",
+              minWidth: { xs: "300px", sm: "360px", md: "400px" },
+              gap: "1.5rem",
+            }}
           >
             <TextField
-              key="size"
-              label="Kích cỡ"
-              error={!values.size}
+              key="shipTo"
+              label="Nơi đến"
+              value={fields["shipTo"]}
+              error={!!errors["shipTo"]}
               required={true}
-              helperText={message}
-              name="size"
-              onChange={(e) => onChange(e)}
-            />
-            <select
-              style={{ height: 55, width: 223 }}
-              class="form-select"
+              helperText={errors["shipTo"]}
+              name="shipTo"
               onChange={(e) => handleChange(e)}
-              name="cateogoryId"
-              required
+            />
+            <TextField
+              id="outlined-select-currency"
+              select
+              value={fields["userId"]}
+              error={!!errors["userId"]}
+              helperText={errors["userId"]}
+              key="userId"
+              onChange={(e) => handleChange(e)}
+              label="Khách hàng"
+              name="userId"
             >
-              <option selected>ss</option>
-              {drivers.map((option) => (
-                <option value={option._id}>{option.name}</option>
+              {customers.map((option) => (
+                <MenuItem key={option._id} value={option._id}>
+                  {option.fullName}
+                </MenuItem>
               ))}
-            </select>
+            </TextField>
           </Stack>
         </form>
       </DialogContent>
@@ -460,16 +504,14 @@ export const CreateNewAccountModal = ({
         <Button
           onClick={() => {
             onClose();
-            // setMessage("");
-            setValues({ name: "default", size: "default", color: "default" });
-            setUnitId("default");
-            setCategoryId("default");
+            setFields({});
+            setErrors({});
           }}
         >
-          Trở về
+          Trờ về
         </Button>
         <Button color="primary" onClick={handleSubmit} variant="contained">
-          Tạo
+          Xuất
         </Button>
       </DialogActions>
     </Dialog>

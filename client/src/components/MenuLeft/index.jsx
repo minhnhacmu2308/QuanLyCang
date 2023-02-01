@@ -171,13 +171,47 @@ export default function Menuleft() {
                     <Link className="nav-link" to="/order-input">
                       Nhập
                     </Link>
-                    <Link className="nav-link" to="/order-ouput">
+                    <Link className="nav-link" to="/order-output">
                       Xuất
                     </Link>
                   </nav>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <>
+                <a
+                  className="nav-link collapsed"
+                  href="#"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapsePages3"
+                  aria-expanded="false"
+                  aria-controls="collapsePages"
+                >
+                  <div className="sb-nav-link-icon">
+                    <i className="fas fa-book-open"></i>
+                  </div>
+                  Đơn hàng
+                  <div className="sb-sidenav-collapse-arrow">
+                    <i className="fas fa-angle-down"></i>
+                  </div>
+                </a>
+                <div
+                  className="collapse"
+                  id="collapsePages3"
+                  aria-labelledby="headingTwo"
+                  data-bs-parent="#sidenavAccordion"
+                >
+                  <nav className="sb-sidenav-menu-nested nav">
+                    <Link
+                      className="nav-link"
+                      to={`/order-by-warehouse/${user?.id}`}
+                    >
+                      Kho quản lý
+                    </Link>
+                  </nav>
+                </div>
+              </>
+            )}
 
             {/* <Link to="/prescription" className="nav-link">
               <div className="sb-nav-link-icon">

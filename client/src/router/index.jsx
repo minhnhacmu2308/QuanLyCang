@@ -9,7 +9,7 @@ import { unitLoader } from "../utils/unitUtils";
 import { packageLoader } from "../utils/packageUtils";
 import { containerLoader } from "../utils/containerUtils";
 import { vehicleLoader } from "../utils/vehicleUtil";
-import { orderLoader } from "../utils/orderUtils";
+import { orderLoader, orderOutputLoader } from "../utils/orderUtils";
 import { driverLoader, customerLoader, userLoader } from "../utils/userUtils";
 import { manufacturerLoader } from "../utils/manufacturerUtils";
 import { productLoader } from "../utils/productUtils";
@@ -29,6 +29,10 @@ import ChangePassword from "../pages/ChangePassword";
 import Profile from "../pages/Profile";
 import CreateOder from "../pages/CreateOder";
 import AuthProvider from "../context/AuthProvider";
+import DetailOrder from "../pages/DetaileOrder";
+import CreateOrderOutput from "../pages/CreateOderOuput";
+import OrderByWarehouse from "../pages/OrderByWarehouse";
+import OrderOutput from "../pages/OrderOuput";
 import path from "path";
 
 const AuthLayout = () => {
@@ -126,8 +130,26 @@ export default createBrowserRouter([
         loader: orderLoader,
       },
       {
+        element: <OrderOutput />,
+        path: "/order-output",
+        loader: orderOutputLoader,
+      },
+      {
+        element: <DetailOrder />,
+        path: "/order/:id",
+      },
+      {
+        element: <OrderByWarehouse />,
+        path: "/order-by-warehouse/:id",
+      },
+      {
         element: <CreateOder />,
         path: "/create-order",
+        loader: orderLoader,
+      },
+      {
+        element: <CreateOrderOutput />,
+        path: "/create-order-output",
         loader: orderLoader,
       },
     ],

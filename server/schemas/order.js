@@ -12,8 +12,11 @@ export default gql`
     driver: Driver
     transequipmentId: String
     transequipment: Transequipment
+    customerId: String
+    customer: Customer
     shipFrom: String
     shipTo: String
+    type: String
     receivingDate: String
     loadingDate: String
     finishTime: String
@@ -27,44 +30,61 @@ export default gql`
   type Warehouse {
     _id: String
     name: String
+    userId: String
   }
   type Vehicle {
     _id: String
-    name: String
+    type: String
     owner: String
   }
   type Transequipment {
     _id: String
-    name: String
+    type: String
   }
   type Container {
-    _id: String
+    containerId: String
     name: String
     packages: [Package]
   }
   type Package {
     _id: String
+    code: String
+    color: String
+    createdAt: Date
+    updatedAt: Date
+    size: String
     name: String
+    owner: String
     products: [Product]
   }
   type Product {
     _id: String
     name: String
   }
+  type Customer {
+    _id: String
+    fullName: String
+  }
   type Driver {
     _id: String
-    name: String
+    fullName: String
   }
   type ProductOrder {
     containers: [Container]
   }
   input ContainerInput {
-    _id: String
+    containerId: String
     name: String
     packages: [PackageInput]
   }
   input PackageInput {
     _id: String
+    code: String
+    color: String
+    createdAt: Date
+    owner: String
+    updatedAt: Date
+    size: String
     name: String
     products: [ProductInput]
   }
@@ -75,8 +95,17 @@ export default gql`
   input ProductOrderInput {
     containers: [ContainerInput]
   }
+  type ProductOrderNew {
+    products :[Product]
+  }
+  input ProductOrderNewInput {
+    products :[ProductInput]
+  }
   extend type Query {
     orders: [Order]
+    orderByWarehouse(userId: String!): [Order]
+    orderOutputs: [Order]
+    order(id: String!): Order
   }
   extend type Mutation {
     addOrder(
@@ -96,7 +125,23 @@ export default gql`
       typeInput: String!
       type: String!
     ): Order
+    addOrderNew(
+      receiptNo: String!
+      shipFrom: String!
+      shipTo: String!
+      customerId: String!
+      vehicleId: String!
+      driverId: String!
+      transequipmentId: String!
+      receivingDate: String!
+      loadingDate: String!
+      finishTime: String!
+      createdBy: String!
+      orderInput: ProductOrderNewInput!
+      description: String!
+      typeInput: String!
+    ): Order
     deleteOrder(_id: String!): Boolean!
-    updateOrder(_id: String!, name: String!, userId: String!): Order
+    updateOrder(_id: String!, typeInput: String!, customerId: String!,shipTo:String!): Order
   }
 `;

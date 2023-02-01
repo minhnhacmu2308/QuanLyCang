@@ -13,6 +13,9 @@ const orderSchema = new mongoose.Schema(
     warehouseId: {
       type: String,
     },
+    customerId: {
+      type: String,
+    },
     vehicleId: {
       type: String,
     },
