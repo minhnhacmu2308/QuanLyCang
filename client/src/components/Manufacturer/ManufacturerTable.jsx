@@ -10,10 +10,12 @@ import {
   Stack,
   TextField,
   Tooltip,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import MaterialReactTable from "material-react-table";
 import moment from "moment";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   addManufacturer,
   deleteManufacturer,
@@ -21,11 +23,21 @@ import {
 } from "../../utils/ManufacturerUtils.js";
 import { generateId } from "../../utils/utils.js";
 import Toast from "../Toast/index.jsx";
-import {MESSAGE_SUCCESS} from "../../constants/index.js"
+import { MESSAGE_SUCCESS } from "../../constants/index.js";
+import Form from "react-validation/build/form";
+import Input from "react-validation/build/input";
 
 function ManufacturerTable({ ...props }) {
+  console.log("prop", props);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState(() => props.props.data.manufacturers);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [dataUpdate, setDataUpdate] = useState({});
+  const [tableData, setTableData] = useState(
+    () => props.props.data.data.manufacturers
+  );
+  const [categorys, setCategorys] = useState(
+    () => props.props.category.data.categorys
+  );
   const [toastData, setToastData] = useState({
     color: "",
     title: "",
@@ -60,10 +72,13 @@ function ManufacturerTable({ ...props }) {
     setAlertState(true);
   };
 
-  const handleCreateNewRow = async (values) => {
+  const handleCreateNewRow = async (values, userId) => {
     const code = generateId(20);
     values.code = code;
+    values.producer = values.producer;
+    values.categoryId = values.categoryId;
     const data = await addManufacturer(values);
+    console.log("data", data);
     var today = new Date();
     const value = data.data.addManufacturer;
     value.createdAt = today;
@@ -76,21 +91,39 @@ function ManufacturerTable({ ...props }) {
     });
   };
 
-  const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
-    const variable = row.original;
-    variable.name = values.name;
-    if (!Object.keys(validationErrors).length) {
-      tableData[row.index] = values;
-      //send/receive api updates here, then refetch or update local table data for re-render
-      setTableData([...tableData]);
-      const data = await updateManufacturer(variable);
-      handleOpen({
-        color: "#009933",
-        title: `Cập nhật ${MESSAGE_SUCCESS}`,
-        type: "success",
-      });
-      exitEditingMode(); //required to exit editing mode and close modal
-    }
+  const handleSaveRowEdits = async (values) => {
+    console.log("values", values);
+    // const variable = row.original;
+    // variable.name = values.name;
+    // variable.userId = values.userId;
+    const index = findIndex(values._id);
+    console.log("index", tableData[index]);
+    values.category = {
+      name: values.categoryName,
+      _id: values.categoryId,
+    };
+    console.log("values-next", values);
+    const data = await updateManufacturer(values);
+    console.log("updata success", data.data.updateManufacturer);
+    tableData[index] = data.data.updateManufacturer;
+    console.log("done", tableData);
+    //send/receive api updates here, then refetch or update local table data for re-render
+    setTableData([...tableData]);
+    handleOpen({
+      color: "#009933",
+      title: `Cập nhật ${MESSAGE_SUCCESS}`,
+      type: "success",
+    });
+    setUpdateModalOpen(false);
+  };
+  const findIndex = (id) => {
+    var result = -1;
+    tableData.forEach((value, index) => {
+      if (value._id === id) {
+        result = index;
+      }
+    });
+    return result;
   };
 
   const handleCancelRowEdits = () => {
@@ -100,9 +133,7 @@ function ManufacturerTable({ ...props }) {
   const handleDeleteRow = useCallback(
     async (row) => {
       if (
-        !confirm(
-          `Bạn có chắc muốn xóa code này không  ${row.getValue("code")}`
-        )
+        !confirm(`Bạn có chắc muốn xóa code này không  ${row.getValue("code")}`)
       ) {
         return;
       }
@@ -119,6 +150,11 @@ function ManufacturerTable({ ...props }) {
     },
     [tableData]
   );
+  const update = (row) => {
+    console.log("row", row);
+    setDataUpdate(row.original);
+    setUpdateModalOpen(true);
+  };
 
   const getCommonEditTextFieldProps = useCallback(
     (cell) => {
@@ -128,14 +164,16 @@ function ManufacturerTable({ ...props }) {
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
           const isValid =
-            cell.column.id === "name"
+            cell.column.id === "name" ||
+            cell.column.id === "producer" ||
+            cell.column.id === "categoryId"
               ? validateRequired(event.target.value)
               : null;
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
               ...validationErrors,
-              [cell.id]: `Không được để trống`,
+              [cell.id]: `Không thể để trống`,
             });
           } else {
             //remove validation error for cell if valid
@@ -156,6 +194,7 @@ function ManufacturerTable({ ...props }) {
         header: "Code",
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         size: 80,
+
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
           type: "text",
@@ -173,6 +212,24 @@ function ManufacturerTable({ ...props }) {
         }),
       },
       {
+        accessorKey: "producer",
+        header: "Nhà sản xuất",
+        muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps(cell),
+          type: "text",
+        }),
+      },
+      {
+        accessorKey: "category.name",
+        header: "Danh mục",
+        muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps(cell),
+          type: "text",
+        }),
+      },
+      {
         accessorKey: "createdAt", //normal accessorKey
         header: "Ngày tạo",
         Cell: ({ cell, table }) => (
@@ -182,7 +239,6 @@ function ManufacturerTable({ ...props }) {
         //optional custom props
         muiTableBodyCellEditTextFieldProps: ({ row }) => ({
           disabled: true,
-          enableHiding: true,
           hidden: true,
         }),
       },
@@ -210,7 +266,7 @@ function ManufacturerTable({ ...props }) {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: "flex", gap: "1rem" }}>
             <Tooltip arrow placement="left" title="Cập nhật">
-              <IconButton onClick={() => table.setEditingRow(row)}>
+              <IconButton onClick={() => update(row)}>
                 <Edit />
               </IconButton>
             </Tooltip>
@@ -242,6 +298,16 @@ function ManufacturerTable({ ...props }) {
         tableData={tableData}
         onClose={() => setCreateModalOpen(false)}
         onSubmit={handleCreateNewRow}
+        categorys={categorys}
+      />
+      <UpdateAccountModal
+        columns={columns}
+        open={updateModalOpen}
+        dataUpdate={dataUpdate}
+        tableData={tableData}
+        onClose={() => setUpdateModalOpen(false)}
+        onSubmit={handleSaveRowEdits}
+        categorys={categorys}
       />
     </>
   );
@@ -254,41 +320,66 @@ export const CreateNewAccountModal = ({
   onClose,
   onSubmit,
   tableData,
+  categorys,
 }) => {
-  columns = columns.filter((x) => x.accessorKey === "name");
+  console.log("categorys", categorys);
   const [values, setValues] = useState(() =>
     columns.reduce((acc, column) => {
-      acc[column.accessorKey ?? ""] = "";
+      acc[column.accessorKey ?? ""] = "default";
       return acc;
     }, {})
   );
-  const [required, setRequired] = useState(false);
+
+  const [fields, setFields] = useState({});
+  const [errors, setErrors] = useState({});
+
+  const [categoryId, setCategoryId] = useState("");
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
-    console.log("value", values);
-    if (!required && values.name !== "") {
-      //put your validation logic here
-      onSubmit(values);
+    fields["categoryId"] = categoryId;
+    if (handleValidation()) {
+      onSubmit(fields);
       onClose();
-    } else {
-      setMessage("Không được để trống");
-      setRequired(true);
+      setFields({});
     }
+    return;
   };
-  const onChange = (e) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
-    const isValid = tableData.filter((x) => x.name === e.target.value);
-    if (isValid.length > 0) {
-      setMessage("Tên đã tồn tại");
-      setRequired(true);
-    } else if (e.target.value === "") {
-      setMessage("Không được để trống");
-      setRequired(true);
-    } else {
-      setMessage("");
-      setRequired(false);
+
+  const handleValidation = () => {
+    let errors = {};
+    let formIsValid = true;
+    //Name
+    if (!fields["name"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["name"] = "Không thể để trống";
     }
+    if (!fields["producer"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["producer"] = "Không thể để trống";
+    }
+    if (categoryId == "") {
+      console.log("true");
+      formIsValid = false;
+      setMessage("Không thể để trống");
+    }
+
+    setErrors(errors);
+    return formIsValid;
+  };
+
+  const handleChange = (e) => {
+    console.log("e", e);
+    fields[e.target.name] = e.target.value;
+    setFields(fields);
+
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+  const handleChange1 = (e) => {
+    setCategoryId(e);
+    setMessage("");
   };
 
   return (
@@ -303,17 +394,46 @@ export const CreateNewAccountModal = ({
               gap: "1.5rem",
             }}
           >
-            {columns.map((column) => (
-              <TextField
-                key={column.accessorKey}
-                label={column.header}
-                error={required}
-                required={true}
-                helperText={message}
-                name={column.accessorKey}
-                onChange={(e) => onChange(e)}
-              />
-            ))}
+            <TextField
+              key="name"
+              label="Tên"
+              value={fields["name"]}
+              error={!!errors["name"]}
+              required={true}
+              helperText={errors["name"]}
+              name="name"
+              onChange={(e) => handleChange(e)}
+            />
+
+            <TextField
+              key="producer"
+              label="Nhà sản xuất"
+              value={fields["producer"]}
+              error={!!errors["producer"]}
+              required={true}
+              helperText={errors["producer"]}
+              name="producer"
+              onChange={(e) => handleChange(e)}
+            />
+
+            <TextField
+              id="outlined-select-currency"
+              select
+              value={categoryId}
+              error={!!message}
+              required={true}
+              helperText={message}
+              key="categoryId"
+              label="Danh mục"
+              name="categoryId"
+              onChange={(e) => handleChange1(e.target.value)}
+            >
+              {categorys.map((option) => (
+                <MenuItem key={option._id} value={option._id}>
+                  {option.name}
+                </MenuItem>
+              ))}
+            </TextField>
           </Stack>
         </form>
       </DialogContent>
@@ -321,14 +441,166 @@ export const CreateNewAccountModal = ({
         <Button
           onClick={() => {
             onClose();
-            setMessage("");
-            setRequired(false);
+            // setMessage("");
+            setValues({ name: "default" });
+            setUserId("default");
           }}
         >
           Trở về
         </Button>
         <Button color="primary" onClick={handleSubmit} variant="contained">
           Tạo
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+//example of creating a mui dialog modal for creating new rows
+export const UpdateAccountModal = ({
+  open,
+  columns,
+  onClose,
+  onSubmit,
+  dataUpdate,
+  categorys,
+}) => {
+  const [values, setValues] = useState(() =>
+    columns.reduce((acc, column) => {
+      acc[column.accessorKey ?? ""] = "default";
+      return acc;
+    }, {})
+  );
+  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [userName, setuserName] = useState("");
+  const [fields, setFields] = useState({});
+  const [errors, setErrors] = useState({});
+  useEffect(() => {
+    fields["name"] = dataUpdate.name;
+    fields["producer"] = dataUpdate.producer;
+    fields["categoryId"] = dataUpdate.category?._id;
+    fields["categoryName"] = dataUpdate.category?.name;
+    fields["code"] = dataUpdate.code;
+    fields["createdAt"] = dataUpdate.createdAt;
+    fields["_id"] = dataUpdate._id;
+    setFields(fields);
+    setName(dataUpdate.name);
+    console.log(dataUpdate.user?._id);
+    setUserId(dataUpdate.user?._id);
+    setuserName(dataUpdate.user?.userName);
+  }, [dataUpdate.category?.name, dataUpdate.category?._id]);
+  const handleSubmit = (e) => {
+    if (handleValidation()) {
+      onSubmit(fields);
+    }
+    return;
+    // console.log("name",name)
+    // console.log("userId",userId)
+    // if (!!values.name && !!userId && userId !=="default" && values.name !== "default") {
+    //     //put your validation logic here
+    //     onSubmit(values,userId);
+    //     onClose();
+    //     setValues({name:"default"})
+    //     setUserId("default")
+    // }else{
+    //     setValues({name:""})
+    //     setUserId("")
+    // }
+  };
+
+  const handleValidation = () => {
+    let errors = {};
+    let formIsValid = true;
+    console.log("files1", fields);
+    //Name
+    if (!fields["name"]) {
+      formIsValid = false;
+      errors["name"] = "Không thể để trống";
+    }
+    if (!fields["producer"]) {
+      formIsValid = false;
+      errors["producer"] = "Không thể để trống";
+    }
+    if (!fields["categoryId"]) {
+      formIsValid = false;
+      errors["categoryId"] = "Không thể để trống";
+    }
+
+    setErrors(errors);
+    return formIsValid;
+  };
+
+  const handleChange = (e) => {
+    console.log("e", e);
+    fields[e.target.name] = e.target.value;
+    setFields(fields);
+    console.log("fields", fields);
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+
+  return (
+    <Dialog open={open}>
+      <DialogTitle textAlign="center">Cập nhật</DialogTitle>
+      <DialogContent>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <Stack
+            sx={{
+              width: "100%",
+              minWidth: { xs: "300px", sm: "360px", md: "400px" },
+              gap: "1.5rem",
+            }}
+          >
+            <TextField
+              key="name"
+              label="Tên"
+              value={fields["name"]}
+              error={!!errors["name"]}
+              required={true}
+              helperText={errors["name"]}
+              name="name"
+              onChange={(e) => handleChange(e)}
+            />
+            <TextField
+              key="producer"
+              label="Nhà sản xuất"
+              value={fields["producer"]}
+              error={!!errors["producer"]}
+              required={true}
+              helperText={errors["producer"]}
+              name="producer"
+              onChange={(e) => handleChange(e)}
+            />
+            <select
+              style={{ height: 55 }}
+              class="form-select"
+              onChange={(e) => handleChange(e)}
+              name="categoryId"
+              required
+            >
+              <option value={fields["categoryId"]} selected>
+                {fields["categoryName"]}
+              </option>
+              {categorys.map((option) => (
+                <option value={option._id}>{option.name}</option>
+              ))}
+            </select>
+          </Stack>
+        </form>
+      </DialogContent>
+      <DialogActions sx={{ p: "1.25rem" }}>
+        <Button
+          onClick={() => {
+            onClose();
+            // setMessage("");
+            setValues({ name: "default" });
+            setUserId("default");
+          }}
+        >
+          Trở về
+        </Button>
+        <Button color="primary" onClick={handleSubmit} variant="contained">
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>

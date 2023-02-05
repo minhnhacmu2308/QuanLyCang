@@ -4,16 +4,24 @@ import { useLoaderData, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer/index";
 import MenuLeft from "../components/MenuLeft";
-import { orderById ,orderByIdNew} from "../utils/orderUtils";
+import { orderById, orderByIdNew } from "../utils/orderUtils";
 
 function DetailOrder() {
-  let { id,type } = useParams();
+  let { id, type } = useParams();
   const [data, setData] = useState();
   console.log("type", type);
   useEffect(() => {
     async function getOrderDetail() {
-      const order =  await orderById(id);
-      setData(order.data.order);
+      let order;
+      if (type == "null") {
+        console.log("type rd", type);
+        order = await orderByIdNew(id);
+        setData(order.data.orderNew);
+      } else {
+        order = await orderById(id);
+        setData(order.data.order);
+      }
+
       console.log("order", order);
     }
     getOrderDetail();
@@ -65,7 +73,7 @@ function DetailOrder() {
                       for="exampleFormControlInput1"
                       style={{ fontWeight: "bold" }}
                     >
-                      Chọn tài xế:
+                      Tài xế:
                     </label>
                     <p>{data?.driver.fullName}</p>
                   </div>
@@ -179,7 +187,7 @@ function DetailOrder() {
                     <p>{data?.typeInput}</p>
                   </div>
                 </div>
-                {data?.type == "Lưu trữ" ? (
+                {data?.type == "Có lưu trữ" ? (
                   <div className="col-md-6">
                     <div className="form-group">
                       <label
@@ -207,67 +215,92 @@ function DetailOrder() {
                 </div>
               </div>
               <div className="">
-                {data?.type == "Không lưu trữ" ? <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Thùng container</th>
-                      <th scope="col">Thùng gỗ</th>
-                      <th scope="col">Sản phẩm</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data?.orderInput?.containers.map((option) => (
+                {data?.type !== null ? (
+                  <table class="table table-bordered">
+                    <thead>
                       <tr>
-                        <th scope="row">1</th>
-                        <td>{option.name}</td>
-                        <td>
-                          {option.packages.map((value) => (
-                            <p>- {value.name}</p>
-                          ))}
-                        </td>
-                        <td>
-                          {option.packages.map((value) => {
-                            return (
-                              <div
-                                style={{
-                                  border: "1px solid #DDDDDD",
-                                  marginBottom: "10px",
-                                  padding: "5px",
-                                }}
-                              >
-                                {value.products.map((value1) => (
-                                  <p>
-                                    {value.name} - {value1.name}
-                                  </p>
-                                ))}
-                              </div>
-                            );
-                          })}
-                        </td>
+                        <th scope="col">#</th>
+                        <th scope="col">Thùng container</th>
+                        <th scope="col">Thùng gỗ</th>
+                        <th scope="col">Sản phẩm</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table> : null}
-                
+                    </thead>
+                    <tbody>
+                      {data?.orderInput?.containers.map((option, index) => (
+                        <tr>
+                          <th scope="row">{index + 1}</th>
+                          <td>{option.name}</td>
+                          <td>
+                            {option.packages.map((value) => (
+                              <p>
+                                - {value.name} -{" "}
+                                {value.size == "1"
+                                  ? " Nhỏ - 200 sản phẩm"
+                                  : value.size == "2"
+                                  ? " Vừa - 500 sản phẩm "
+                                  : " Lớn - 1000 sản phẩm"}
+                              </p>
+                            ))}
+                          </td>
+                          <td>
+                            {option.packages.map((value) => {
+                              return (
+                                <div
+                                  style={{
+                                    border: "1px solid #DDDDDD",
+                                    marginBottom: "10px",
+                                    padding: "5px",
+                                  }}
+                                >
+                                  {option.products.map((value1) => {
+                                    if (
+                                      value1.idContainer ===
+                                        option.containerId &&
+                                      value1.idPackage === value._id
+                                    ) {
+                                      return (
+                                        <p>
+                                          {value.name}- {value1.name}
+                                        </p>
+                                      );
+                                    }
+                                  })}
+                                </div>
+                              );
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Thùng gỗ</th>
+                        <th scope="col">Sản phẩm</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data?.orderInput?.packages.map((option, index) => (
+                        <tr>
+                          <th scope="row">{index + 1}</th>
+                          <td>
+                            {option.name} -
+                            {option.size == "1"
+                              ? " Nhỏ - 200 sản phẩm"
+                              : option.size == "2"
+                              ? " Vừa - 500 sản phẩm "
+                              : " Lớn - 1000 sản phẩm"}
+                          </td>
+                          <td>{option.product.name}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
-              {/* <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Sản phẩm</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data?.orderInput?.product.map((option) => (
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>{option.name}</td>                      
-                      </tr>
-                    ))}
-                  </tbody>
-                </table> */}
             </div>
           </main>
           <Footer />

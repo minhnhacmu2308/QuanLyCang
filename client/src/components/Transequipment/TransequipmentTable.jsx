@@ -14,14 +14,21 @@ import {
 import MaterialReactTable from "material-react-table";
 import moment from "moment";
 import { useCallback, useMemo, useState } from "react";
-import { addTransequipment, deleteTransequipment, updateTransequipment } from "../../utils/transequipmentUtills.js";
+import {
+  addTransequipment,
+  deleteTransequipment,
+  updateTransequipment,
+} from "../../utils/transequipmentUtills.js";
 import { generateId } from "../../utils/utils.js";
 import Toast from "../Toast/index.jsx";
-import {MESSAGE_SUCCESS} from "../../constants/index.js";
+import { MESSAGE_SUCCESS } from "../../constants/index.js";
+import axios from "axios";
 
 function TransequipmentTable({ ...props }) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState(() => props.props.data.transequipments);
+  const [tableData, setTableData] = useState(
+    () => props.props.data.transequipments
+  );
   const [toastData, setToastData] = useState({
     color: "",
     title: "",
@@ -78,7 +85,7 @@ function TransequipmentTable({ ...props }) {
     variable.type = values.type;
     if (!Object.keys(validationErrors).length) {
       tableData[row.index] = values;
-      console.log("values",values);
+      console.log("values", values);
       //send/receive api updates here, then refetch or update local table data for re-render
       setTableData([...tableData]);
       const data = await updateTransequipment(variable);
@@ -98,9 +105,7 @@ function TransequipmentTable({ ...props }) {
   const handleDeleteRow = useCallback(
     async (row) => {
       if (
-        !confirm(
-          `Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("type")}`
-        )
+        !confirm(`Bạn có chắc muốn xóa đơn vị có code  ${row.getValue("type")}`)
       ) {
         return;
       }
@@ -127,7 +132,8 @@ function TransequipmentTable({ ...props }) {
         onBlur: (event) => {
           const isValid =
             cell.column.id === "type" || cell.column.id === "owner"
-              ? validateRequired(event.target.value)  : null;
+              ? validateRequired(event.target.value)
+              : null;
           if (!isValid) {
             //set validation error for cell if invalid
             setValidationErrors({
@@ -167,6 +173,26 @@ function TransequipmentTable({ ...props }) {
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
           type: "text",
+        }),
+      },
+      {
+        accessorKey: "image",
+        header: "Ảnh",
+        muiTableHeadCellProps: { sx: { color: "#0D6EFD" } },
+        Cell: ({ cell, table }) => (
+          <img
+            src={cell.getValue()}
+            alt=""
+            border="3"
+            height="100"
+            width="100"
+          />
+        ),
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps({ ...cell }),
+          type: "text",
+          disabled: true,
+          hidden: true,
         }),
       },
       {
@@ -269,22 +295,72 @@ export const CreateNewAccountModal = ({
       return acc;
     }, {})
   );
+  const [fields, setFields] = useState({});
+  const [errors, setErrors] = useState({});
+  const [image, setImage] = useState("");
   const handleSubmit = (e) => {
-    if (!!values.type && !!values.owner && values.type ==="default" && values.owner === "default"){
-      setValues({type:"",owner:""})
-    }else if(!values.owner || values.owner === "default" ){
-      setValues({...values,owner:""})
-    }else if(!values.type || values.type === "default" ){
-      setValues({...values,type:""})
-    }else{
-      onSubmit(values);
+    fields["image"] = image;
+    if (handleValidation()) {
+      setFields(fields);
+      onSubmit(fields);
       onClose();
-      setValues({type:"default",owner:"default"})
+      setFields({});
+      setImage("");
     }
+    return;
   };
-  const onChange = (e) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
-    console.log("valuessss",values);
+
+  const handleValidation = () => {
+    let errors = {};
+    let formIsValid = true;
+    //Name
+    if (!fields["owner"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["owner"] = "Không thể để trống";
+    }
+    if (!fields["type"]) {
+      console.log("true");
+      formIsValid = false;
+      errors["type"] = "Không thể để trống";
+    }
+    if (!fields["image"]) {
+      console.log("image");
+      formIsValid = false;
+      errors["image"] = "Không thể để trống";
+    }
+
+    setErrors(errors);
+    return formIsValid;
+  };
+
+  const handleChange = (e) => {
+    console.log("e", e);
+    fields[e.target.name] = e.target.value;
+    setFields(fields);
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+
+  const handleFileChange = async (e) => {
+    const formData = new FormData();
+    console.log("file", e.target.files[0]);
+    // Update the formData object
+    formData.append("image", e.target.files[0]);
+    let url = "http://localhost:3000/admin/upload-image";
+    try {
+      const response = await axios({
+        method: "post",
+        url: url,
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (response.status === 200) {
+        setImage(response.data.secure_url);
+      }
+      console.log("res", response);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -302,19 +378,45 @@ export const CreateNewAccountModal = ({
             <TextField
               key="type"
               label="Loại"
-              error={!values.type}
+              value={fields["type"]}
+              error={!!errors["type"]}
               required={true}
+              helperText={errors["type"]}
               name="type"
-              onChange={(e) => onChange(e)}
+              onChange={(e) => handleChange(e)}
             />
             <TextField
               key="owner"
               label="Chủ sỡ hữu"
-              error={!values.owner}
+              value={fields["owner"]}
+              error={!!errors["owner"]}
               required={true}
+              helperText={errors["owner"]}
               name="owner"
-              onChange={(e) => onChange(e)}
+              onChange={(e) => handleChange(e)}
             />
+            <TextField
+              key="image"
+              value={fields["image"]}
+              error={!!errors["image"]}
+              required={true}
+              helperText={errors["image"]}
+              name="image"
+              type="file"
+              onChange={(e) => handleFileChange(e)}
+            />
+            <div style={{ marginLeft: "0px", marginTop: "10px" }} id="divImage">
+              <img
+                id="avatar"
+                height="190"
+                width="100%"
+                src={
+                  image == ""
+                    ? "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
+                    : image
+                }
+              />
+            </div>
           </Stack>
         </form>
       </DialogContent>
@@ -323,7 +425,7 @@ export const CreateNewAccountModal = ({
           onClick={() => {
             onClose();
             // setMessage("");
-            setValues({type:"default",owner:"default"})
+            setValues({ type: "default", owner: "default" });
           }}
         >
           Cancel

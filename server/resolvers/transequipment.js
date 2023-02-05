@@ -30,7 +30,7 @@ export default {
         {
           type: args.type,
           code: args.code,
-          owner:args.owner
+          owner: args.owner,
         }
       );
       return result;

@@ -71,34 +71,60 @@ function CreateOrderOutput() {
     // }
     fields[e.target.name] = e.target.value;
     setFields(fields);
-    if (fields["type"] == "Lưu trữ") {
+    if (fields["type"] == "Có lưu trữ") {
       setActiveWarehouse(true);
     } else {
       setActiveWarehouse(false);
     }
     console.log("fields", fields);
   };
-  const handleChangeProduct = (e) => {
+  const handleChangePackage = (e) => {
     var options = e.target.options;
     console.log("options", options);
     var value = [];
     for (var i = 0, l = options.length; i < l; i++) {
       if (options[i].selected) {
-        for (let j = 0; j < products.length; j++) {
-          if (options[i].value === products[j]._id) {
-            value.push({_id:products[j]._id,name:products[j].name});
+        for (let j = 0; j < packages.length; j++) {
+          if (options[i].value === packages[j]._id) {
+            value.push({
+              _id: products[j]._id,
+              name: packages[j].name,
+              size: packages[j].size,
+            });
           }
         }
       }
     }
     console.log("value", value);
-   setOrderInput(value);
+    setOrderInput(value);
+    setPackageValues(value);
+    console.log("value", orderInput);
+  };
+  const handleChangeProduct = (e, packageId, packageName, packageSize) => {
+    console.log("e", e.target.value);
+    console.log("packageId", packageId);
+    console.log("packageName", packageName);
+    console.log("packageSize", packageSize);
+    for (let j = 0; j < packageValues.length; j++) {
+      if (packageValues[j]._id == packageId) {
+        for (let k = 0; k < products.length; k++) {
+          if (e.target.value === products[k]._id) {
+            packageValues[j]["product"] = {
+              _id: products[k]._id,
+              name: products[k].name,
+            };
+          }
+        }
+      }
+    }
+    setPackageValues(packageValues);
+    console.log("packageValues", packageValues);
   };
   const onChangeNext1 = () => {
-    if (valuePackage.length == 0 && containerValues.length == 0) {
+    if (packageValues.length == 0) {
       handleOpen({
         color: "red",
-        title: `Cần chọn thùng container`,
+        title: `Cần chọn thùng gỗ`,
         type: "error",
       });
     } else {
@@ -117,11 +143,11 @@ function CreateOrderOutput() {
     }
   };
   const onChangeNext3 = () => {
-    fields["orderInput"] = orderInput;
+    fields["orderInput"] = { packages: packageValues };
   };
   const onSubmit = async () => {
     console.log("fields", fields);
-    fields["orderInput"] = orderInput;
+    fields["orderInput"] = packageValues;
     if (
       fields["shipFrom"] == null ||
       fields["shipTo"] == null ||
@@ -145,6 +171,7 @@ function CreateOrderOutput() {
       fields["typeInput"] = "Xuất hàng";
       fields["receiptNo"] = code;
       setFields(fields);
+      console.log("fineal", fields);
       let data = await addOrderNew(fields);
       console.log("data", data);
       handleOpen({
@@ -171,7 +198,7 @@ function CreateOrderOutput() {
         <div id="layoutSidenav_content">
           <main>
             <div className="container-fluid px-4">
-              <h1 className="mt-4">Xuất  hàng</h1>
+              <h1 className="mt-4">Xuất hàng</h1>
               <ol className="breadcrumb mb-4">
                 <li className="breadcrumb-item active">Xuất hàng</li>
               </ol>
@@ -180,7 +207,7 @@ function CreateOrderOutput() {
               <div className="row">
                 <div className="col-md-6">
                   <div className="form-group">
-                  <label for="exampleFormControlInput1">
+                    <label for="exampleFormControlInput1">
                       Chọn khách hàng:<span style={{ color: "red" }}>*</span>
                     </label>
                     <select
@@ -344,7 +371,6 @@ function CreateOrderOutput() {
                     />
                   </div>
                 </div>
-                
               </div>
               <div className="row" style={{ marginBottom: "10px" }}>
                 <div className="col-md-12">
@@ -364,9 +390,120 @@ function CreateOrderOutput() {
                 </div>
               </div>
               <span style={{ fontWeight: "bold" }}>NHẬP CHI TIẾT : </span>
-              <span style={{ color: "red" }}>*</span> 
-              <div className="row">
-               
+              <span style={{ color: "red" }}>*</span>
+              {activeContainer ? (
+                <div className="row">
+                  <div className="col-md-8">
+                    <div className="form-group">
+                      <label for="exampleFormControlInput1">
+                        Chọn thùng gỗ: <span style={{ color: "red" }}>*</span>
+                      </label>
+                      <select
+                        class="form-select"
+                        onChange={(e) => handleChangePackage(e)}
+                        multiple
+                        name="packageId"
+                        required
+                      >
+                        <option value="" selected>
+                          Chọn thùng gỗ
+                        </option>
+                        {packages.map((option) => (
+                          <option value={option._id}>
+                            {option.name} -{" "}
+                            {option.size == "1"
+                              ? "Nhỏ - 200 sản phẩm"
+                              : option.size == "2"
+                              ? "Vừa - 500 sản phẩm "
+                              : "Lớn - 1000 sản phẩm"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col-md-4" style={{ margin: "auto" }}>
+                    <div className="form-group">
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => onChangeNext1()}
+                      >
+                        Tiếp
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : activePackage ? (
+                <div className="row">
+                  <div className="col-md-10">
+                    {packageValues.map((value, index) => {
+                      return (
+                        <div
+                          className="row"
+                          style={{
+                            border: "1px solid #DDDDDD",
+                            marginBottom: "10px",
+                            padding: "5px",
+                          }}
+                        >
+                          <div className="col-md-6">
+                            <div className="form-group">
+                              <p
+                                style={{
+                                  fontWeight: "bold",
+                                  marginTop: "50px",
+                                }}
+                              >
+                                {index + 1} : {value.name} -{" "}
+                                {value.size == "1"
+                                  ? "Nhỏ - 200 sản phẩm"
+                                  : value.size == "2"
+                                  ? "Vừa - 500 sản phẩm "
+                                  : "Lớn - 1000 sản phẩm"}
+                              </p>
+                            </div>
+                          </div>
+                          <div
+                            className="col-md-6"
+                            style={{
+                              borderLeft: "1px solid #DDDDDD",
+                            }}
+                          >
+                            <div className="form-group">
+                              <label for="exampleFormControlInput1">
+                                Chọn sản phẩm:{" "}
+                                <span style={{ color: "red" }}>*</span>
+                              </label>
+                              <select
+                                class="form-select"
+                                onChange={(e) =>
+                                  handleChangeProduct(
+                                    e,
+                                    value._id,
+                                    value.name,
+                                    value.size
+                                  )
+                                }
+                                name="productId"
+                                required
+                              >
+                                <option value="" selected>
+                                  Chọn sản phẩm
+                                </option>
+                                {products.map((option) => (
+                                  <option value={option._id}>
+                                    {option.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+              {/* <div className="row">
                 <div className="col-md-6">
                   <div className="form-group">
                     <label for="exampleFormControlInput1">
@@ -388,7 +525,7 @@ function CreateOrderOutput() {
                     </select>
                   </div>
                 </div>
-              </div>           
+              </div> */}
             </div>
             <div className="col-md-1" style={{ margin: "20px" }}>
               <div className="form-group">

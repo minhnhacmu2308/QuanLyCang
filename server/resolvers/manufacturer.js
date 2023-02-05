@@ -1,10 +1,17 @@
-import { ManufacturerModel } from "../models/index.js";
+import { ManufacturerModel, CategoryModel } from "../models/index.js";
 
 export default {
   Query: {
     manufacturers: async () => {
       const manufactures = await ManufacturerModel.find();
       return manufactures;
+    },
+  },
+  Manufacturer: {
+    category: async (parent, args) => {
+      const categoryId = parent.categoryId;
+      const categorys = await CategoryModel.find();
+      return categorys.find((category) => category.id === categoryId);
     },
   },
   Mutation: {
@@ -27,8 +34,13 @@ export default {
       const result = await ManufacturerModel.findByIdAndUpdate(manufactureId, {
         name: args.name,
         code: args.code,
+        producer: args.producer,
+        categoryId: args.categoryId,
       });
-      return result;
+      const manufactures = await ManufacturerModel.findOne({
+        _id: manufactureId,
+      });
+      return manufactures;
     },
   },
 };

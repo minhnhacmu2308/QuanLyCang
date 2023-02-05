@@ -10,6 +10,7 @@ import { generateId } from "../utils/utils.js";
 import { useNavigate } from "react-router-dom";
 
 let valuePackage = [];
+let productList = [];
 function CreateOder() {
   const data = useLoaderData();
   console.log("HOme", data);
@@ -68,7 +69,7 @@ function CreateOder() {
     // }
     fields[e.target.name] = e.target.value;
     setFields(fields);
-    if (fields["type"] == "Lưu trữ") {
+    if (fields["type"] == "Có lưu trữ") {
       setActiveWarehouse(true);
     } else {
       setActiveWarehouse(false);
@@ -147,53 +148,85 @@ function CreateOder() {
     namePackage
   ) => {
     var options = e.target.options;
-    console.log("options", options);
+    console.log("options", e.target.value);
     console.log("idContainer", idContainer);
     console.log("nameContainer", nameContainer);
     console.log("idPackage", idPackage);
     console.log("namePackage", namePackage);
     console.log("orderInput", orderInput);
-    var productList = [];
-    let packageList = [];
-    valuePackage = orderInput;
-    for (let i = 0; i < orderInput.length; i++) {
-      if (orderInput[i].containerId === idContainer) {
-        console.log("orderInput[i]", orderInput[i]);
-        let sizePackage = orderInput[i].packages.length;
-        for (let j = 0; j < sizePackage; j++) {
-          console.log(
-            "orderInput[i].packages[j].containerId",
-            orderInput[i].packages[j].containerId
-          );
-          if (orderInput[i].packages[j]._id === idPackage) {
-            console.log(
-              "valuePackage[i].packages[j]._id",
-              orderInput[i].packages[j]._id
-            );
-            // let data = {
-
-            // }
-            console.log("valuePackage[i]", orderInput[i]);
-            for (let k = 0; k < options.length; k++) {
-              if (options[k].selected) {
-                // productList.push({ _id: options[k].value });
-                for (let h = 0; h < products.length; h++) {
-                  if (options[k].value === products[h]._id) {
-                    productList.push({
-                      _id: products[h]._id,
-                      name: products[h].name,
-                    });
-                  }
-                }
+    var arrCheck = [];
+    var arrPackageId = [];
+    if (productList.length == 0) {
+      for (let h = 0; h < products.length; h++) {
+        if (e.target.value === products[h]._id) {
+          productList.push({
+            _id: products[h]._id,
+            name: products[h].name,
+            idPackage: idPackage,
+            idContainer: idContainer,
+          });
+        }
+      }
+      for (let k = 0; k < productList.length; k++) {
+        arrCheck.push({
+          idContainer: productList[k].idContainer,
+          idPackage: productList[k].idPackage,
+        });
+        console.log("arrCheck", arrCheck);
+      }
+      console.log("first");
+      console.log("productList", productList);
+    } else {
+      for (let k = 0; k < productList.length; k++) {
+        arrCheck.push({
+          idContainer: productList[k].idContainer,
+          idPackage: productList[k].idPackage,
+        });
+        console.log("arrCheck", arrCheck);
+      }
+      for (let k = 0; k < productList.length; k++) {
+        console.log(" aa", {
+          idContainer: idContainer,
+          idPackage: idPackage,
+        });
+        var found = false;
+        for (let i = 0; i < arrCheck.length; i++) {
+          if (
+            arrCheck[i].idContainer == idContainer &&
+            arrCheck[i].idPackage == idPackage
+          ) {
+            console.log("second1");
+            for (let h = 0; h < products.length; h++) {
+              if (e.target.value === products[h]._id) {
+                productList[k]._id = products[h]._id;
+                productList[k].name = products[h].name;
               }
             }
-            let abc = orderInput[i].packages[j];
-            console.log("abc", abc);
-            abc.products = productList;
-            break;
+            console.log("productList", productList);
+          } else {
+            productList = productList.filter(
+              (x) => x.idContainer !== idContainer || x.idPackage !== idPackage
+            );
+            console.log("second2");
+            console.log("productList-filer", productList);
+            for (let h = 0; h < products.length; h++) {
+              if (e.target.value === products[h]._id) {
+                productList.push({
+                  _id: products[h]._id,
+                  name: products[h].name,
+                  idPackage: idPackage,
+                  idContainer: idContainer,
+                });
+              }
+            }
+            console.log("productList", productList);
           }
         }
       }
+    }
+    console.log("productList", productList);
+    for (let index = 0; index < valuePackage.length; index++) {
+      valuePackage[index]["products"] = productList;
     }
     console.log("orderInput222", valuePackage);
     setOrderInput(orderInput);
@@ -300,7 +333,7 @@ function CreateOder() {
                       required
                     >
                       <option value="">Chọn loại</option>
-                      <option value="Lưu trữ">Lưu trữ</option>
+                      <option value="Có lưu trữ">Có lưu trữ</option>
                       <option value="Không lưu trữ">Không lưu trữ</option>
                     </select>
                   </div>
@@ -578,7 +611,12 @@ function CreateOder() {
                                 </option>
                                 {packages.map((option) => (
                                   <option value={option._id}>
-                                    {option.name}
+                                    {option.name} -{" "}
+                                    {option.size == "1"
+                                      ? "Nhỏ - 200 sản phẩm"
+                                      : option.size == "2"
+                                      ? "Vừa - 500 sản phẩm "
+                                      : "Lớn - 1000 sản phẩm"}
                                   </option>
                                 ))}
                               </select>
@@ -651,7 +689,12 @@ function CreateOder() {
                                       fontWeight: "bold",
                                     }}
                                   >
-                                    {index + 1}.{index1 + 1} - {value1.name}
+                                    {index + 1}.{index1 + 1} - {value1.name} -{" "}
+                                    {value1.size == "1"
+                                      ? " Nhỏ - 200 sản phẩm"
+                                      : value1.size == "2"
+                                      ? " Vừa - 500 sản phẩm "
+                                      : " Lớn - 1000 sản phẩm"}
                                   </p>
                                 );
                               })}
@@ -679,7 +722,6 @@ function CreateOder() {
                                               value1.name
                                             )
                                           }
-                                          multiple
                                           name={`${value1._id}product`}
                                           required
                                         >

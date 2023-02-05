@@ -25,14 +25,12 @@ export default {
     },
     updateVehicle: async (parent, args) => {
       const vehicleId = args._id;
-      const result = await VehicleModel.findByIdAndUpdate(
-        vehicleId,
-        {
-          type: args.type,
-          code: args.code,
-          owner:args.owner
-        }
-      );
+      const result = await VehicleModel.findByIdAndUpdate(vehicleId, {
+        type: args.type,
+        code: args.code,
+        licensePlates: args.licensePlates,
+        owner: args.owner,
+      });
       return result;
     },
   },

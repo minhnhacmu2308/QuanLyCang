@@ -9,7 +9,7 @@ import { unitLoader } from "../utils/unitUtils";
 import { packageLoader } from "../utils/packageUtils";
 import { containerLoader } from "../utils/containerUtils";
 import { vehicleLoader } from "../utils/vehicleUtil";
-import { orderLoader, orderOutputLoader } from "../utils/orderUtils";
+import { orderLoader, orderOutputLoader,statisticalHome } from "../utils/orderUtils";
 import { driverLoader, customerLoader, userLoader } from "../utils/userUtils";
 import { manufacturerLoader } from "../utils/manufacturerUtils";
 import { productLoader } from "../utils/productUtils";
@@ -55,6 +55,7 @@ export default createBrowserRouter([
       {
         element: <Home />,
         path: "/",
+        loader: statisticalHome,
       },
       {
         element: <Category />,
@@ -136,7 +137,7 @@ export default createBrowserRouter([
       },
       {
         element: <DetailOrder />,
-        path: "/order/:id",
+        path: "/order/:id/:type",
       },
       {
         element: <OrderByWarehouse />,

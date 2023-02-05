@@ -3,12 +3,14 @@ import MaterialReactTable from 'material-react-table';
 import Header from '../components/Header';
 import Footer from '../components/Footer/index';
 import MenuLeft from '../components/MenuLeft';
+import { Link } from "react-router-dom";
 
-
+import { useLoaderData } from "react-router-dom";
 
 
 function Home() {
-
+    const data = useLoaderData();
+    console.log("HOme", data);
   return  <body className="sb-nav-fixed">
   <Header/>
   <div id="layoutSidenav">
@@ -25,36 +27,46 @@ function Home() {
                   <div className="row">
                       <div className="col-xl-3 col-md-6">
                           <div className="card bg-primary text-white mb-4">
-                              <div className="card-body">Primary Card</div>
+                              <div className="card-body">Tổng số đơn hàng đã nhập: {data?.data.statistical?.numberInput}</div>
                               <div className="card-footer d-flex align-items-center justify-content-between">
-                                  <a className="small text-white stretched-link" href="#">View Details</a>
+                              <Link className="small text-white stretched-link" to="/order-input">
+                              Xem chi tiết
+                                </Link>
+                               
                                   <div className="small text-white"><i className="fas fa-angle-right"></i></div>
                               </div>
                           </div>
                       </div>
                       <div className="col-xl-3 col-md-6">
                           <div className="card bg-warning text-white mb-4">
-                              <div className="card-body">Warning Card</div>
+                              <div className="card-body">Tổng số đơn hàng đã xuất: {data?.data.statistical?.numberOutput} </div>
                               <div className="card-footer d-flex align-items-center justify-content-between">
-                                  <a className="small text-white stretched-link" href="#">View Details</a>
+                              <Link className="small text-white stretched-link" to="/order-output">
+                              Xem chi tiết
+                                </Link>
+                               
                                   <div className="small text-white"><i className="fas fa-angle-right"></i></div>
                               </div>
                           </div>
                       </div>
                       <div className="col-xl-3 col-md-6">
                           <div className="card bg-success text-white mb-4">
-                              <div className="card-body">Success Card</div>
+                              <div className="card-body">Tổng số khách hàng: {data?.data.statistical?.totalCustomer} </div>
                               <div className="card-footer d-flex align-items-center justify-content-between">
-                                  <a className="small text-white stretched-link" href="#">View Details</a>
+                              <Link className="small text-white stretched-link" to="/customer">
+                     Xem chi tiết
+                    </Link>
                                   <div className="small text-white"><i className="fas fa-angle-right"></i></div>
                               </div>
                           </div>
                       </div>
                       <div className="col-xl-3 col-md-6">
                           <div className="card bg-danger text-white mb-4">
-                              <div className="card-body">Danger Card</div>
+                          <div className="card-body">Tổng số nhân viên: {data?.data.statistical?.totalProduct} </div>
                               <div className="card-footer d-flex align-items-center justify-content-between">
-                                  <a className="small text-white stretched-link" href="#">View Details</a>
+                              <Link className="small text-white stretched-link" to="/employee">
+                     Xem chi tiết
+                    </Link>
                                   <div className="small text-white"><i className="fas fa-angle-right"></i></div>
                               </div>
                           </div>

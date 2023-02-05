@@ -2,9 +2,17 @@ import mongoose from "mongoose";
 
 const vehicleSchema = new mongoose.Schema(
   {
-    code:{
-      type:String,
-      require:true
+    code: {
+      type: String,
+      require: true,
+    },
+    image: {
+      type: String,
+      require: true,
+    },
+    licensePlates: {
+      type: String,
+      require: true,
     },
     type: {
       type: String,

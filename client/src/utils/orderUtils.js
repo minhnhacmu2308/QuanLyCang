@@ -6,6 +6,26 @@ import { containerLoader } from "./containerUtils";
 import { packageLoader } from "./packageUtils";
 import { driverLoader, customerLoader } from "./userUtils.js";
 import { transequipmentLoader } from "./transequipmentUtills.js";
+export const statisticalHome = async () => {
+  const query =`query Statistical {
+    statistical {
+      numberInput
+      numberOutput
+      totalCustomer
+      totalProduct
+    }
+  }`
+  const res = await fetch(`${GRAPHQL_SERVER}/graphql`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ query }),
+  });
+  const data = await res.json();
+  return data;
+};
 export const orderLoader = async () => {
   const query = `query Query {
         orders {
@@ -52,11 +72,13 @@ export const orderLoader = async () => {
               name
               packages {
                 _id
+                name            
+              },
+              products {
+                _id
                 name
-                products {
-                  _id
-                  name
-                }
+                idContainer
+                idPackage
               }
             }
           }
@@ -141,10 +163,13 @@ export const orderOutputLoader = async () => {
               packages {
                 _id
                 name
-                products {
-                  _id
-                  name
-                }
+             
+              }
+              products {
+                _id
+                name
+                idContainer
+                idPackage
               }
             }
           }
@@ -229,11 +254,13 @@ export const orderByWarehouse = async (payload) => {
           name
           packages {
             _id
+            name   
+          }
+          products {
+            _id
             name
-            products {
-              _id
-              name
-            }
+            idContainer
+            idPackage
           }
         }
       }
@@ -314,10 +341,13 @@ export const orderById = async (payload) => {
                 packages {
                   _id
                   name
-                  products {
-                    _id
-                    name
-                  }
+                 
+                }
+                products {
+                  _id
+                  name
+                  idContainer
+                  idPackage
                 }
               }
       }
@@ -343,7 +373,7 @@ export const orderById = async (payload) => {
 
 export const orderByIdNew = async (payload) => {
   const query = `query Order($orderId: String!) {
-    order(id: $orderId) {
+    orderNew(id: $orderId) {
       _id
       receiptNo
       warehouse {
@@ -377,9 +407,14 @@ export const orderByIdNew = async (payload) => {
       description
       typeInput
       orderInput {
-        products {
+        packages {
           _id
           name
+          size
+          product{
+            _id
+            name
+          }
         }
       }
       createdAt
@@ -448,10 +483,13 @@ export const addOrder = async (payload) => {
           packages {
             _id
             name
-            products {
-              _id
-              name
-            }
+          
+          }
+          products {
+            _id
+            name
+            idContainer
+            idPackage
           }
         }
       }
@@ -492,7 +530,6 @@ export const addOrder = async (payload) => {
   return data;
 };
 
-
 export const addOrderNew = async (payload) => {
   const query = `mutation Mutation($receiptNo: String!, $shipFrom: String!, $shipTo: String!,  $vehicleId: String!, $driverId: String!,$customerId: String!, $transequipmentId: String!, $receivingDate: String!, $loadingDate: String!, $finishTime: String!, $createdBy: String!, $orderInput: ProductOrderNewInput!, $description: String!, $typeInput: String!, ) {
     addOrderNew(receiptNo: $receiptNo, shipFrom: $shipFrom, shipTo: $shipTo,  vehicleId: $vehicleId, driverId: $driverId,customerId:$customerId, transequipmentId: $transequipmentId, receivingDate: $receivingDate, loadingDate: $loadingDate, finishTime: $finishTime, createdBy: $createdBy, orderInput: $orderInput, description: $description, typeInput: $typeInput) {
@@ -531,25 +568,20 @@ export const addOrderNew = async (payload) => {
       createdBy
       description
       typeInput
-      orderInput {
-        products {
-          _id
-          name
-        }
-      }
+      
       createdAt
       updatedAt
     }
   }`;
   let orderInput = {
-    products: payload.orderInput,
+    packages: payload.orderInput,
   };
   console.log("orderInpututil", payload);
   const variables = {
     receiptNo: payload.receiptNo,
     shipFrom: payload.shipFrom,
     shipTo: payload.shipTo,
-    customerId:payload.customerId,
+    customerId: payload.customerId,
     vehicleId: payload.vehicleId,
     driverId: payload.driverId,
     transequipmentId: payload.transequipmentId,
@@ -572,7 +604,6 @@ export const addOrderNew = async (payload) => {
   const data = await res.json();
   return data;
 };
-
 
 export const deleteOrder = async (payload) => {
   console.log("payload", payload);
@@ -661,10 +692,13 @@ export const updateOrder = async (payload) => {
           packages {
             _id
             name
-            products {
-              _id
-              name
-            }
+         
+          }
+          products {
+            _id
+            name
+            idContainer
+            idPackage
           }
         }
       }

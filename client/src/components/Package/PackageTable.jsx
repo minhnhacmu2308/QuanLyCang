@@ -10,6 +10,7 @@ import {
   Stack,
   TextField,
   Tooltip,
+  MenuItem,
 } from "@mui/material";
 import MaterialReactTable from "material-react-table";
 import moment from "moment";
@@ -180,6 +181,15 @@ function PackageTable({ ...props }) {
       {
         accessorKey: "size",
         header: "Kích thước",
+        Cell: ({ cell, table }) => (
+          <span>
+            {cell.getValue() == "1"
+              ? "Nhỏ - 200 sản phẩm"
+              : cell.getValue() == "2"
+              ? "Vừa - 500 sản phẩm "
+              : "Lớn - 1000 sản phẩm"}
+          </span>
+        ),
         muiTableHeadCellProps: { sx: { color: "#0D6EFD" } }, //optional custom props
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell),
@@ -370,6 +380,8 @@ export const CreateNewAccountModal = ({
               onChange={(e) => handleChange(e)}
             />
             <TextField
+              id="outlined-select-currency"
+              select
               key="size"
               label="Kích thước"
               value={fields["size"]}
@@ -378,7 +390,12 @@ export const CreateNewAccountModal = ({
               helperText={errors["size"]}
               name="size"
               onChange={(e) => handleChange(e)}
-            />
+            >
+              <MenuItem value="1">Nhỏ - 200 sản phẩm</MenuItem>
+              <MenuItem value="2">Vừa - 500 sản phẩm</MenuItem>
+              <MenuItem value="3">Lớn - 1000 sản phẩm</MenuItem>
+            </TextField>
+
             <TextField
               key="name"
               label="Tên"

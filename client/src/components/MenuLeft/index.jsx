@@ -137,12 +137,10 @@ export default function Menuleft() {
                   data-bs-parent="#sidenavAccordion"
                 >
                   <nav className="sb-sidenav-menu-nested nav">
-                    <Link className="nav-link" to="/invoices-buy">
-                      Buy
+                    <Link className="nav-link" to="/thong-ke">
+                     Thống kê
                     </Link>
-                    <Link className="nav-link" to="/invoices-sell">
-                      Sell
-                    </Link>
+                   
                   </nav>
                 </div>
                 <a

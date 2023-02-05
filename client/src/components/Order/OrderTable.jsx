@@ -110,7 +110,7 @@ function OrderTable({ ...props }) {
       title: `Xuất hàng  ${MESSAGE_SUCCESS}`,
       type: "success",
     });
-    navigate("/order-output")
+    navigate("/order-output");
   };
 
   const handleSaveRowEdits = async (values) => {
@@ -333,7 +333,7 @@ function OrderTable({ ...props }) {
             <Tooltip arrow placement="left" title="Cập nhật">
               <Link
                 className="nav-link"
-                to={`/order/${row.original._id}`}
+                to={`/order/${row.original._id}/${row.original.type}`}
               >
                 Chi tiết
               </Link>
